@@ -17,7 +17,7 @@ class Controller():
         """
         self.network = network
         network.set_controller(self)
-        
+    
     def calculate_route(self, alice, bob):
         """
         Procura a rota de menor custo.
@@ -78,7 +78,7 @@ class Controller():
                         e91_count += 1
                         
         return allocated_routes, list_app
-
+    
     def send_requests(self, request_list):
         """
         Envia as requisições para a rede que as executa a partir da lista.
@@ -89,19 +89,17 @@ class Controller():
 
         # 
         exec_index = 1
-        requests_sent = []
+        results = dict()
         
         # Enquanto houver requisições na lista de requisições
         while len(request_list) > 0:
             # Alocando as rotas para os pedidos possíveis de serem atendidos, ou seja, que não compartilham links
             allocated_routes, list_app = self.allocate_routes(request_list)
-            # Controla qual requisição será executada
-            app_index = 0
-            
+                        
             # Printando as informações da execução
-            print(f'{exec_index}ª execução.')
-            print(f'Rotas alocadas: {allocated_routes}')
-            print(f'Apps: {list_app}')
+            #print(f'{exec_index}ª execução.')
+            #print(f'Rotas alocadas: {allocated_routes}')
+            #print(f'Apps: {list_app}')
             
             for route, app in zip(allocated_routes, list_app):
                 # Alice é o primeiro elemento da rota e Bob é o último
@@ -110,10 +108,15 @@ class Controller():
                 
                 # Executa a aplicação QKD
                 if qkd_app == 'B92':
-                    results = run_qkd_b92(self.network, self, alice, bob)
+                    exec_data = run_qkd_b92(self.network, self, alice, bob)
                 elif qkd_app == 'BB84':
-                    results = run_qkd_bb84(self.network, self, alice, bob)
+                    exec_data = run_qkd_bb84(self.network, self, alice, bob)
                 elif qkd_app == 'E91':
-                    results = run_qkd_e91(self.network, self, alice, bob)
+                    exec_data = run_qkd_e91(self.network, self, alice, bob)
 
+            # Coletando dados
+            results[exec_index] = exec_data
+            
             exec_index += 1
+        
+        return results

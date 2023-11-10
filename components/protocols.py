@@ -39,6 +39,7 @@ def run_qkd_b92(network, controller, alice, bob, key_size=100):
     results['generated key'] = key_alice
     results['shared key'] = measured_qubits
     results['different bits'] = diff_bits
+    results['key sucess'] = len(measured_qubits) / key_size
 
     return results
 
@@ -88,7 +89,8 @@ def run_qkd_bb84(network, controller, alice, bob, key_size=100):
     results['generated key'] = key_alice
     results['shared key'] = generated_shared_key
     results['different bits'] = len(key_alice) - len(measured_qubits)
-
+    results['key sucess'] = len(generated_shared_key) / key_size
+    
     # Resultados
     return results
 
@@ -137,5 +139,6 @@ def run_qkd_e91(network, controller, alice, bob, key_size=100):
     results['generated key'] = key_alice
     results['shared key'] = generated_shared_key
     results['different bits'] = len(key_alice) - len(measured_qubits)
+    results['key sucess'] = len(generated_shared_key) / key_size
     
     return results    
