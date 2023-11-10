@@ -84,7 +84,7 @@ def prepara_qubits_b92(key):
     return qubits
 
 
-def apply_measurement_b92(qubits):
+def apply_measurement_b92(qubits, bases):
     """
     Mede os qubits a partir das bases já definidas.
 
@@ -95,14 +95,12 @@ def apply_measurement_b92(qubits):
         results (list): Lista com resultados das medições dos qubits.
     """
     
-    bases = []
     results = []
     result = 0
     measure = 0
     
-    for qubit in qubits:
+    for qubit, base in zip(qubits, bases):
         
-        base = random.randint(0, 1)
         bases.append(base)
         if base == 1:
             qubit.H()
@@ -116,4 +114,4 @@ def apply_measurement_b92(qubits):
                 result = 1         
             results.append(result)
             
-    return results, bases
+    return results
