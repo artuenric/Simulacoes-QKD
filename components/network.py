@@ -43,6 +43,48 @@ class Network():
         """
         self.controller = controller
     
+    def set_fully_connected_topology(self, num_nodes):
+        # Update network topology
+        self.topology = "Fully Connected"
+        
+        # Create a fully connected (complete) network
+        G = nx.complete_graph(num_nodes)
+        G = nx.convert_node_labels_to_integers(G)
+
+        # Assign random weights and initial memory to nodes
+        for node in G.nodes:
+            G.nodes[node]["qubits_available"] = random.randint(4, 10)
+            G.nodes[node]["qubits_reducing_rate"] = random.uniform(0.01, 0.1)
+            G.nodes[node]["qubits_increasing_rate"] = random.uniform(0.3, 0.5)
+            G.nodes[node]["qubits_threshold"] = random.randint(2, 4)
+
+        # Initialize channels
+        channels = {(u, v): {
+            # EPRs
+            "epr_available": random.randint(1, 2),   
+            "epr_max_capacity": random.uniform(0.5, 0.95),
+            # fidelity 
+            "fidelity_value": random.uniform(0.85, 1),
+            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
+            "fidelity_threshold": random.uniform(0.5, 0.8),
+            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
+        } for u, v in G.edges}
+
+        channels.update({(v, u): {
+            # EPRs
+            "epr_available": random.randint(1, 2),   
+            "epr_max_capacity": random.uniform(0.5, 0.95),
+            # fidelity 
+            "fidelity_value": random.uniform(0.85, 1),
+            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
+            "fidelity_threshold": random.uniform(0.5, 0.8),
+            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
+        } for u, v in G.edges})  # Add reverse direction channels
+        
+        # Update network graphs and channels
+        self.G = G
+        self.channels = channels
+    
     def set_lattice_topology(self, rows, cols):
         """
         Cria uma rede com topologia de grade.
@@ -73,7 +115,7 @@ class Network():
             "fidelity_value": random.uniform(0.90, 1),
         } for u, v in G.edges})  # Add reverse direction channels
 
-        # Update network graphics and channels
+        # Update network graphs and channels
         self.G = G
         self.channels = channels
 
