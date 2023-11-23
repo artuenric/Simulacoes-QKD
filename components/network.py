@@ -12,6 +12,8 @@ class Network():
         self.channels = None
         self.topology = None
         self.controller = None
+        self.fidelity = 0.95
+        
         
     def draw(self):
         # Plot the network
@@ -42,48 +44,47 @@ class Network():
         Define o controlador da rede.
         """
         self.controller = controller
+        
+    def assign_to_net(self, G):
+        """
+        Atribui as propriedades dos nós e canais à rede.
+        """
+        for node in G.nodes:
+            G.nodes[node]["qubits_available"] = random.randint(4, 10)
+        
+        # Initialize channels
+        channels = {(u, v): {
+            # EPRs
+            "epr_available": random.randint(1, 2),   
+            # fidelity 
+            "fidelity_value": self.fidelity,
+        } for u, v in G.edges}
+
+        channels.update({(v, u): {
+            # EPRs
+            "epr_available": random.randint(1, 2),
+            # Fidelity 
+            "fidelity_value": self.fidelity,
+        } for u, v in G.edges})  # Add reverse direction channels
+        
+        return G, channels
     
     def set_fully_connected_topology(self, num_nodes):
+        """
+        Cria uma rede com topologia malha (totalmente conectada).
+
+        Args:
+            num_nodes (int): Número de nós.
+        """
         # Update network topology
         self.topology = "Fully Connected"
         
         # Create a fully connected (complete) network
         G = nx.complete_graph(num_nodes)
         G = nx.convert_node_labels_to_integers(G)
-
-        # Assign random weights and initial memory to nodes
-        for node in G.nodes:
-            G.nodes[node]["qubits_available"] = random.randint(4, 10)
-            G.nodes[node]["qubits_reducing_rate"] = random.uniform(0.01, 0.1)
-            G.nodes[node]["qubits_increasing_rate"] = random.uniform(0.3, 0.5)
-            G.nodes[node]["qubits_threshold"] = random.randint(2, 4)
-
-        # Initialize channels
-        channels = {(u, v): {
-            # EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            # fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in G.edges}
-
-        channels.update({(v, u): {
-            # EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            # fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in G.edges})  # Add reverse direction channels
         
-        # Update network graphs and channels
-        self.G = G
-        self.channels = channels
+        # Assign properties to the nodes and channels
+        self.G, self.channels = self.assign_to_net(self, G)
     
     def set_lattice_topology(self, rows, cols):
         """
@@ -93,31 +94,16 @@ class Network():
             rows (int): Número de linhas.
             cols (int): Número de colunas.
         """
-
         # Update network topology
         self.topology = "Lattice"
         
         # Create a lattice topology network
         G = nx.generators.lattice.grid_2d_graph(rows, cols)
         G = nx.convert_node_labels_to_integers(G)
-        # Assign random weights and initial memory to nodes
-        for node in G.nodes:
-            G.nodes[node]["qubits_available"] = 50
-        # Initialize channels
-        channels = {(u, v): {
-            #EPRs
-            "epr_available": 20 ,
-            "fidelity_value": random.uniform(0.90, 1),      
-        } for u, v in G.edges}
-        channels.update({(v, u): {
-        # EPRs
-            "epr_available": 20,
-            "fidelity_value": random.uniform(0.90, 1),
-        } for u, v in G.edges})  # Add reverse direction channels
-
-        # Update network graphs and channels
-        self.G = G
-        self.channels = channels
+        
+        # Assign properties to the nodes and channels
+        self.G, self.channels = self.assign_to_net(G)
+        
 
     def set_ring_topology(self, num_nodes):
         """
@@ -128,38 +114,12 @@ class Network():
         """
         
         # Create a ring topology network
-        self.G = nx.cycle_graph(num_nodes)
-        self.G = nx.convert_node_labels_to_integers(self.G)
-
-        # Assign random weights and initial memory to nodes
-        for node in self.G.nodes:
-            self.G.nodes[node]["qubits_available"] = random.randint(4, 10)
-            self.G.nodes[node]["qubits_reducing_rate"] = random.uniform(0.01, 0.1)
-            self.G.nodes[node]["qubits_increasing_rate"] = random.uniform(0.3, 0.5)
-            self.G.nodes[node]["qubits_threshold"] = random.randint(2, 4)   
-
-        # Initialize channels
-        self.channels = {(u, v): {
-            #EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            #fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges}
-
-        self.channels.update({(v, u): {
-        #EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            #fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges})  # Add reverse direction channels
+        G = nx.cycle_graph(num_nodes)
+        G = nx.convert_node_labels_to_integers(G)
+        
+        # Assign properties to the nodes and channels
+        self.G, self.channels = self.assign_to_net(G)
+        
 
     def set_star_topology(self, num_nodes):
         """
@@ -170,38 +130,12 @@ class Network():
         """
         
         # Create a star topology network
-        self.G = nx.star_graph(num_nodes - 1)  # num_nodes includes the center node
-        self.G = nx.convert_node_labels_to_integers(self.G)
-
-        # Assign random weights and initial memory to nodes
-        for node in self.G.nodes:
-            self.G.nodes[node]["qubits_available"] = random.randint(4, 10)
-            self.G.nodes[node]["qubits_reducing_rate"] = random.uniform(0.01, 0.1)
-            self.G.nodes[node]["qubits_increasing_rate"] = random.uniform(0.3, 0.5)
-            self.G.nodes[node]["qubits_threshold"] = random.randint(2, 4)   
-
-        # Initialize channels
-        self.channels = {(u, v): {
-            #EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            #fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges}
-
-        self.channels.update({(v, u): {
-        #EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            #fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges})  # Add reverse direction channels
+        G = nx.star_graph(num_nodes - 1)  # num_nodes includes the center node
+        G = nx.convert_node_labels_to_integers(G)
+        
+        # Assign properties to the nodes and channels
+        self.G, self.channels = self.assign_to_net(G)
+        
     
     def create_line_topology_network(self, num_nodes):
         """
@@ -211,38 +145,11 @@ class Network():
             num_nodes (int): Número de nós.
         """
         # Create a line topology (path graph)
-        self.G = nx.path_graph(num_nodes)
-        self.G = nx.convert_node_labels_to_integers(self.G)
+        G = nx.path_graph(num_nodes)
+        G = nx.convert_node_labels_to_integers(self.G)
 
         # Assign random weights and initial memory to nodes
-        for node in self.G.nodes:
-            self.G.nodes[node]["qubits_available"] = random.randint(4, 10)
-            self.G.nodes[node]["qubits_reducing_rate"] = random.uniform(0.01, 0.1)
-            self.G.nodes[node]["qubits_increasing_rate"] = random.uniform(0.3, 0.5)
-            self.G.nodes[node]["qubits_threshold"] = random.randint(2, 4)
-
-        # Initialize channels
-        self.channels = {(u, v): {
-            # EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            # fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges}
-
-        self.channels.update({(v, u): {
-            # EPRs
-            "epr_available": random.randint(1, 2),   
-            "epr_max_capacity": random.uniform(0.5, 0.95),
-            # fidelity 
-            "fidelity_value": random.uniform(0.85, 1),
-            "fidelity_reducing_rate": random.uniform(0.01, 0.1),
-            "fidelity_threshold": random.uniform(0.5, 0.8),
-            "fidelity_reposition_rate": random.uniform(0.1, 0.2),
-        } for u, v in self.G.edges})  # Add reverse direction channels 
+        self.G, self.channels = self.assign_to_net(G)
     
     def random_alice_bob(self, diff_nodes):
         """
@@ -278,21 +185,23 @@ class Network():
             received_qubits (list): Lista com os qubits que chegaram no Bob.
         """
         received_qubits = []
-
+        index_interference_qubit = []
         # Cada qubit irá percorrer a rota, de alice até bob
         for qubit in qubits:
             # O range vai até o penúltimo elemento da rota, pois o último é o nó de Bob
             for indice in range(len(route) - 1):
-                # Channels (u, v) -> u é o nó de origem e v é o nó de destino. Aqui, acessamos os nós pelo seu índice na rota
-                channel_fidelity = self.channels[(route[indice], route[indice+1])] 
+                # Channels (u, v) -> u é o nó de origem e v é o nó de destino. Aqui, acessamos os nós pelo seu índice na rota.
+                # O canal é acessado pelo índice do nó de origem e destino na rota. O canal guarda um dicionario com as propriedades do canal. "fidelity_value" é a fidelidade do canal.
+                channel_fidelity = self.channels[(route[indice], route[indice+1])]["fidelity_value"]
                 # O qubit sofre interferência com uma probabilidade igual a 1 - fidelidade do canal
                 if random.uniform(0, 1) > channel_fidelity:
                     qubit.interference()
-                    
-        # Adiciona o qubit na lista de qubits recebidos
-        received_qubits.append(qubit)
+                    index_interference_qubit.append(qubits.index(qubit))
 
-        return received_qubits
+            # Adiciona o qubit na lista de qubits recebidos
+            received_qubits.append(qubit)
+
+        return received_qubits, index_interference_qubit
     
     def send_eprs(self, route, eprs):
         """

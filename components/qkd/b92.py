@@ -1,67 +1,11 @@
+# Dependências gerais
 import random
 from components.qubit import Qubit
 
 # Funções gerais
-
-def create_key(size):
-    """
-    Gera uma lista de 0s e 1s para uma chave de criptografia.
-
-    Args:
-        size (int): Tamanho desejado para a chave.
-
-    Returns:
-        key (list): Uma lista com 0s e 1s aleatórios.
-    """
-    
-    key = []
-    
-    for bit in range(size):
-        key.append(random.randint(0, 1))
-    
-    return key
-
-
-def generate_bases(size):
-    """
-    Gera uma lista com as bases escolhidas para realizar a medição dos qubits.
-    
-    Args:
-        size (int): Tamanho da chave.
-    """
-    
-    bases = []
-    
-    for base in range(size):
-        bases.append(random.randint(0, 1))
-    
-    return bases
-
-
-def compare_bases(base_alice, base_bob):
-    """
-    Compara as bases de Alice e Bob.
-    Args:
-        base_alice (list): Lista de 0s e 1s para as bases escolhidas por Alice.
-        base_bob (list): Lista de 0s e 1s para as bases escolhidas por Bob.
-
-    Returns:
-        matching_bases (lista): Lista de Trues e Falses para representar o macth das bases.
-    """
-    
-    matching_bases = []
-    
-    for a, b in zip(base_alice, base_bob):
-        if a == b:
-            matching_bases.append(True)
-        else:
-            matching_bases.append(False)
-    
-    return matching_bases
-
+from components.qkd.app import *
 
 # Protocolo B92
-
 def prepara_qubits_b92(key):
     """
     Prepara os qubits de acordo com a chave clássica gerada.
@@ -83,7 +27,6 @@ def prepara_qubits_b92(key):
         
     return qubits
 
-
 def apply_measurement_b92(qubits, bases):
     """
     Mede os qubits a partir das bases já definidas.
@@ -100,8 +43,7 @@ def apply_measurement_b92(qubits, bases):
     measure = 0
     
     for qubit, base in zip(qubits, bases):
-        
-        bases.append(base)
+        # Aplica a base
         if base == 1:
             qubit.H()
 
@@ -113,5 +55,25 @@ def apply_measurement_b92(qubits, bases):
             elif base == 0:
                 result = 1         
             results.append(result)
-            
+        # Caso o resultado seja  0, não é possível saber se o qubit foi enviado como 0 ou 1
+        else:
+            results.append(None)
+        
     return results
+
+def check_key(key_bob, indexs):
+    """
+    Compara as chaves de Alice e Bob.
+
+    Args:
+        key_bob (list): Chave obtida por Bob.
+        indexs (list): Lista com os índices dos qubits que sofreram interferência.
+    """
+    shared_key = []
+    
+    for bit in key_bob:
+        if bit != None:
+            if key_bob.index(bit) not in indexs:
+                shared_key.append(bit)
+    
+    return shared_key

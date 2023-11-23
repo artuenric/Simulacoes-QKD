@@ -1,63 +1,12 @@
+# Dependências gerais
 import random
 from components.qubit import Qubit
 from components.epr import Epr
 
 # Funções gerais
+from components.qkd.app import *
 
-def create_key(size):
-    """
-    Gera uma lista de 0s e 1s para uma chave de criptografia.
-
-    Args:
-        size (int): Tamanho desejado para a chave.
-
-    Returns:
-        key (list): Uma lista com 0s e 1s aleatórios.
-    """
-    
-    key = []
-    
-    for bit in range(size):
-        key.append(random.randint(0, 1))
-    
-    return key
-
-def generate_bases(size):
-    """
-    Gera uma lista com as bases escolhidas para realizar a medição dos qubits.
-    
-    Args:
-        size (int): Tamanho da chave.
-    """
-    
-    bases = []
-    
-    for base in range(size):
-        bases.append(random.randint(0, 1))
-    
-    return bases
-
-def compare_bases(base_alice, base_bob):
-    """
-    Compara as bases de Alice e Bob.
-    Args:
-        base_alice (list): Lista de 0s e 1s para as bases escolhidas por Alice.
-        base_bob (list): Lista de 0s e 1s para as bases escolhidas por Bob.
-
-    Returns:
-        matching_bases (lista): Lista de Trues e Falses para representar o macth das bases.
-    """
-    
-    matching_bases = []
-    
-    for a, b in zip(base_alice, base_bob):
-        if a == b:
-            matching_bases.append(True)
-        else:
-            matching_bases.append(False)
-    
-    return matching_bases
-
+# Protocolo E91
 def prepara_qubits_e91(key, bases):
     """
     Prepara os qubits de acordo com a chave clássica gerada.
@@ -101,23 +50,3 @@ def aplly_bases_in_measurement_e91(eprs, bases):
         results.append(measurement)
     
     return results
-
-def get_key(measured_qubits, match_bases):
-    """
-    Filtra a lista com os resultados das medições para somente aquelas que as bases deram match.
-    
-    Args:
-        match_bases (lista): Lista com as bases que deram match.
-        measured_qubits (lista): Lista com os resultados das medições dos qubits.
-    
-    Returns:
-        shared_key (list): Chave compartilhada utilizável.
-    """
-    
-    shared_key = []
-    
-    for qubit, base in zip(measured_qubits, match_bases):
-        if base:
-            shared_key.append(qubit)
-    
-    return shared_key

@@ -43,7 +43,6 @@ class Qubit():
         """
         Simula uma pequena interferência no qubit. Faz um bit flip com um XOR.
         """
-        
         self.lastState ^=  1
         
     def measure(self):
