@@ -27,8 +27,9 @@ class Controller():
         Returns:
             route (list): Lista de nós que compõem a rota.
         """
-        route = nx.shortest_path(self.network.G, alice, bob)
-        return route
+        routes = list(nx.all_shortest_paths(self.network.G, alice, bob))
+        print("Rotas calculadas", routes)
+        return routes
     
     def allocate_routes(self, request_list):
         """
@@ -44,39 +45,45 @@ class Controller():
         list_app = []
                 
         for alice, bob, app in request_list.copy():
-            # Calcula a rota de menor custo
-            route = self.calculate_route(alice, bob)
-            #for route in routes 
-            # Lista de pares de elementos adjacentes da lista route
-            route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
+            # Calcula as rotas de menor custo
+            routes = self.calculate_route(alice, bob)
             
-            # Checa se nenhum link dessa rota já foi usado em uma rota anterior
-            if not any(link in all_used_links for link in route_links):
-                    # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
-                    if app == 'BB84' or app == 'B92':
-                        bb84_b92_used_links.update(route_links)
-                    
-                    # Adiciona a rota e o app na lista de rotas alocadas
-                    allocated_routes.append(route)
-                    list_app.append(app)
-                    
-                    # Adiciona os links usados no conjunto de links usados
-                    all_used_links.update(route_links)
-                    
-                    # Remove a requisição da lista de requisições
-                    request_list.remove((alice, bob, app))
-                    #break
-            elif app == 'E91':
-                # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
-                if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
-                    # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
-                    if e91_count < 3:
+            for route in routes:
+                print("Rota avaliada", route)
+                # Lista de pares de elementos adjacentes da lista route (canais)
+                route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
+                
+                # Checa se nenhum link dessa rota já foi usado em uma rota anterior
+                if not any(link in all_used_links for link in route_links):
+                        # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
+                        if app == 'BB84' or app == 'B92':
+                            bb84_b92_used_links.update(route_links)
+                        
+                        # Adiciona a rota e o app na lista de rotas alocadas
                         allocated_routes.append(route)
                         list_app.append(app)
-                        all_used_links.update(route_links)
-                        request_list.remove((alice, bob, app))
-                        e91_count += 1
                         
+                        # Adiciona os links usados no conjunto de links usados
+                        all_used_links.update(route_links)
+                        
+                        # Remove a requisição da lista de requisições
+                        request_list.remove((alice, bob, app))
+                        
+                        break
+                    
+                elif app == 'E91':
+                    # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
+                    if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
+                        # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
+                        if e91_count < 3:
+                            allocated_routes.append(route)
+                            list_app.append(app)
+                            all_used_links.update(route_links)
+                            request_list.remove((alice, bob, app))
+                            e91_count += 1
+                        
+                        break
+                            
         return allocated_routes, list_app
     
     def send_requests(self, request_list):

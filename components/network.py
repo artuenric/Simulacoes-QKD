@@ -137,7 +137,7 @@ class Network():
         self.G, self.channels = self.assign_to_net(G)
         
     
-    def create_line_topology_network(self, num_nodes):
+    def set_line_topology_network(self, num_nodes):
         """
         Cria uma rede com topologia de linha.
         
@@ -151,7 +151,7 @@ class Network():
         # Assign random weights and initial memory to nodes
         self.G, self.channels = self.assign_to_net(G)
     
-    def random_alice_bob(self, diff_nodes):
+    def random_alice_bob(self, diff_nodes=5):
         """
         Escolhe um nó aleatório na rede para Alice e outro para Bob. Útil para protocolos com um remetente e um receptor.
 
