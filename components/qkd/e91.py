@@ -31,7 +31,7 @@ def prepara_qubits_e91(key, bases):
         
     return pairs
 
-def aplly_bases_in_measurement_e91(eprs, bases):
+def aplly_bases_in_measurement_e91(qubits, bases):
     """
     Mede os qubits a partir das bases já definidas.
 
@@ -43,10 +43,10 @@ def aplly_bases_in_measurement_e91(eprs, bases):
     measurement = 0
     results = []
 
-    for epr, base, in zip(eprs, bases):
+    for qubit, base in zip(qubits, bases):
         if base == 1:
-            epr.qubit2.H()
-        measurement = epr.qubit2.measure()
+            qubit.H()
+        measurement = qubit.measure()
         results.append(measurement)
     
     return results

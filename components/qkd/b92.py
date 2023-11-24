@@ -60,20 +60,3 @@ def apply_measurement_b92(qubits, bases):
             results.append(None)
         
     return results
-
-def check_key(key_bob, indexs):
-    """
-    Compara as chaves de Alice e Bob.
-
-    Args:
-        key_bob (list): Chave obtida por Bob.
-        indexs (list): Lista com os índices dos qubits que sofreram interferência.
-    """
-    shared_key = []
-    
-    for bit in key_bob:
-        if bit != None:
-            if key_bob.index(bit) not in indexs:
-                shared_key.append(bit)
-    
-    return shared_key

@@ -72,9 +72,28 @@ def get_key(measured_qubits, match_bases):
     for qubit, base in zip(measured_qubits, match_bases):
         if base:
             bob_key.append(qubit)
-        
+        else:
+            bob_key.append(None)
+            
     return bob_key
    
+def check_key(key_bob, key_alice):
+    """
+    Compara as chaves de Alice e Bob.
+
+    Args:
+        key_alice (list): Chave gerada por Alice.
+        key_bob (list): Chave obtida por Bob.
+    """
+    shared_key = []
+
+    for bob_bit, alice_bit in zip(key_bob, key_alice):
+        if bob_bit != None:
+            if bob_bit == alice_bit:
+                shared_key.append(bob_bit)
+    
+    return shared_key
+
 def generate_qkd_request(rede, num_requests, diff_nodes=5):
         """
         Gera uma lista de requisições aleatórias de QKD.

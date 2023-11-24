@@ -46,7 +46,7 @@ class Controller():
         for alice, bob, app in request_list.copy():
             # Calcula a rota de menor custo
             route = self.calculate_route(alice, bob)
-            
+            #for route in routes 
             # Lista de pares de elementos adjacentes da lista route
             route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
             
@@ -65,7 +65,7 @@ class Controller():
                     
                     # Remove a requisição da lista de requisições
                     request_list.remove((alice, bob, app))
-            
+                    #break
             elif app == 'E91':
                 # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
                 if not any(e91_link in bb84_b92_used_links for e91_link in route_links):

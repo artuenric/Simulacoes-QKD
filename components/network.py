@@ -185,7 +185,8 @@ class Network():
             received_qubits (list): Lista com os qubits que chegaram no Bob.
         """
         received_qubits = []
-        index_interference_qubit = []
+        index_interference_qubit = set()
+        
         # Cada qubit irá percorrer a rota, de alice até bob
         for qubit in qubits:
             # O range vai até o penúltimo elemento da rota, pois o último é o nó de Bob
@@ -196,7 +197,7 @@ class Network():
                 # O qubit sofre interferência com uma probabilidade igual a 1 - fidelidade do canal
                 if random.uniform(0, 1) > channel_fidelity:
                     qubit.interference()
-                    index_interference_qubit.append(qubits.index(qubit))
+                    index_interference_qubit.add(qubits.index(qubit))
 
             # Adiciona o qubit na lista de qubits recebidos
             received_qubits.append(qubit)
@@ -214,25 +215,22 @@ class Network():
         Returns:
             received_qubits (list): Lista com os qubits que chegaram no Bob.
         """
-        # Considerar fazer com fidelidades dos canais
-        total_fidelity = sum(self.channels[(route[i], route[i + 1])]["fidelity_value"] for i in range(len(route) - 1))
-        num_segments = len(route) - 1
-        media_fidelity = total_fidelity / num_segments
-
         received_qubits = []
+        index_interference_qubit = set()
         
         # Cada qubit irá percorrer a rota, de alice até bob
         for epr in eprs:
             # O range vai até o penúltimo elemento da rota, pois o último é o nó de Bob
             for indice in range(len(route) - 1):
                 # Channels (u, v) -> u é o nó de origem e v é o nó de destino. Aqui, acessamos os nós pelo seu índice na rota
-                channel_fidelity = self.channels[(route[indice], route[indice+1])] 
+                channel_fidelity = self.channels[(route[indice], route[indice+1])]["fidelity_value"]
                 # O qubit sofre interferência com uma probabilidade igual a 1 - fidelidade do canal
                 if random.uniform(0, 1) > channel_fidelity:
                     qubit = epr.qubit2.interference()
+                    index_interference_qubit.add(eprs.index(epr))
+                    
             qubit = epr.qubit2
-            
-        # Adiciona o qubit na lista de qubits recebidos
-        received_qubits.append(qubit)
-                
-        return received_qubits
+            # Adiciona o qubit na lista de qubits recebidos
+            received_qubits.append(qubit)
+                          
+        return received_qubits, index_interference_qubit
