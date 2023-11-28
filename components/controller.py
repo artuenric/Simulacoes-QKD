@@ -18,7 +18,7 @@ class Controller():
         self.network = network
         network.set_controller(self)
     
-    def calculate_all_routes(self, alice, bob):
+    def calculate_route(self, alice, bob):
         """
         Procura a rota de menor custo.
         Args:
@@ -26,6 +26,21 @@ class Controller():
 
         Returns:
             route (list): Lista de nós que compõem a rota.
+        """
+        route = nx.shortest_path(self.network.G, alice, bob)
+        print("Rotas calculadas", route)
+        return route
+    
+    
+    
+    def calculate_all_routes(self, alice, bob):
+        """
+        Procura as rotas de menor custo.
+        Args:
+            alice, bob (node): Nós do grafo da rede.
+
+        Returns:
+            route (list): Lista com listas de nós que compõem a rota.
         """
         routes = list(nx.all_simple_paths(self.network.G, alice, bob))
         routes = sorted(routes, key=len)
@@ -133,11 +148,11 @@ class Controller():
                 
                 # Executa a aplicação QKD
                 if qkd_app == 'B92':
-                    exec_data = run_qkd_b92(self.network, self, alice, bob)
+                    exec_data = run_qkd_b92(self.network, route)
                 elif qkd_app == 'BB84':
-                    exec_data = run_qkd_bb84(self.network, self, alice, bob)
+                    exec_data = run_qkd_bb84(self.network, route)
                 elif qkd_app == 'E91':
-                    exec_data = run_qkd_e91(self.network, self, alice, bob)
+                    exec_data = run_qkd_e91(self.network, route)
 
             # Coletando dados
             results[exec_index] = exec_data

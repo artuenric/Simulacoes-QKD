@@ -3,7 +3,7 @@ from components.qkd.bb84 import *
 from components.qkd.e91 import *
 
 # QKD B92
-def run_qkd_b92(network, controller, alice, bob, key_size=1000):
+def run_qkd_b92(network, route, key_size=10):
     """
     Executa o protocolo QKD B92.
 
@@ -27,26 +27,28 @@ def run_qkd_b92(network, controller, alice, bob, key_size=1000):
     # Informações para Bob
     bases_bob = generate_bases(key_size)
     
-    # Calculando a rota
-    route = controller.calculate_route(alice, bob)
+    # Enviando os qubits
+    bob_received_qubits, interference_qubits = network.send_qubits(route, qubits)
     
     # Bob mede os qubits
-    measured_qubits = apply_measurement_b92(qubits, bases_bob)
+    key_bob = apply_measurement_b92(bob_received_qubits, bases_bob)
     
-    diff_bits = len(key_alice) - len(measured_qubits)
+    # Qubits sem interferência
+    shared_key = check_key(key_bob, key_alice)
+    
     
     # Resultados da execução
     results = dict()
     results['app'] = 'B92'
     results['generated key'] = key_alice
-    results['shared key'] = measured_qubits
-    results['different bits'] = diff_bits
-    results['key sucess'] = len(measured_qubits) / key_size
+    results['shared key'] = shared_key
+    results['different bits'] = len(key_alice) - len(shared_key)
+    results['key sucess'] = len(shared_key) / key_size
 
     return results
 
 # QKD BB84
-def run_qkd_bb84(network, controller, alice, bob, key_size=1000):
+def run_qkd_bb84(network, route, key_size=10):
     """
     Executa o protocolo QKD BB84.
 
@@ -72,31 +74,34 @@ def run_qkd_bb84(network, controller, alice, bob, key_size=1000):
     # Informações para Bob
     bases_bob = generate_bases(key_size)
     
-    # Calculando a rota
-    route = controller.calculate_route(alice, bob)
+    # Enviando os qubits
+    received_qubits, interference_qubits = network.send_qubits(route, qubits)
     
     # Bob mede os qubits
-    measured_qubits = aplly_bases_in_measurement_bb84(qubits, bases_bob)
+    measured_qubits = aplly_bases_in_measurement_bb84(received_qubits, bases_bob)
     
     # Comparando as bases de Alice e Bob
     matching_bases = compare_bases(bases_alice, bases_bob)
     
     # Chave obtida de acordo com as bases
-    generated_shared_key = get_key(measured_qubits, matching_bases)
+    key_bob = get_key(measured_qubits, matching_bases)
+    
+    # Checando a chave
+    shared_key = check_key(key_bob, key_alice)
 
     # Resultados da execução
     results = dict()
     results['app'] = 'BB84'
     results['generated key'] = key_alice
-    results['shared key'] = generated_shared_key
-    results['different bits'] = len(key_alice) - len(measured_qubits)
-    results['key sucess'] = len(generated_shared_key) / key_size
+    results['shared key'] = shared_key
+    results['different bits'] = len(key_alice) - len(shared_key)
+    results['key sucess'] = len(shared_key) / key_size
     
     # Resultados
     return results
 
 # QKD E91
-def run_qkd_e91(network, controller, alice, bob, key_size=1000):
+def run_qkd_e91(network, route, key_size=10):
     """
     Executa o protocolo QKD E91.
 
@@ -120,24 +125,30 @@ def run_qkd_e91(network, controller, alice, bob, key_size=1000):
     # Informações para Bob
     bases_bob = generate_bases(key_size)
     
-    # Calculando a rota
-    route = controller.calculate_route(alice, bob)
+    # Enviando os qubits
+    received_qubits, interference_qubits = network.send_eprs(route, pairs)
     
-    # Bob mede os qubits
-    measured_qubits = aplly_bases_in_measurement_e91(pairs, bases_bob)
+    # Bob medindo os qubits
+    measured_qubits = aplly_bases_in_measurement_e91(received_qubits, bases_bob)
     
     # Comparando as bases de Alice e Bob
     matching_bases = compare_bases(bases_alice, bases_bob)
     
     # Chave obtida de acordo com as bases
-    generated_shared_key = get_key(measured_qubits, matching_bases)
+    key_bob = get_key(measured_qubits, matching_bases)
+    
+    # Chave obtida de acordo com as bases
+    key_bob = get_key(measured_qubits, matching_bases)
+    
+    # Checando chave
+    shared_key = check_key(key_bob, key_alice)
     
     # Resultados da execução
     results = dict()
     results['app'] = 'E91'
     results['generated key'] = key_alice
-    results['shared key'] = generated_shared_key
-    results['different bits'] = len(key_alice) - len(measured_qubits)
-    results['key sucess'] = len(generated_shared_key) / key_size
+    results['shared key'] = shared_key
+    results['different bits'] = len(key_alice) - len(shared_key)
+    results['key sucess'] = len(shared_key) / key_size
     
     return results    
