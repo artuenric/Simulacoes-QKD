@@ -1,6 +1,6 @@
 import networkx as nx
 from components.protocols import *
-
+from itertools import islice
 class Controller():
     """
     Um objeto que atua como Controlador SDN para a rede quântica.
@@ -28,10 +28,7 @@ class Controller():
             route (list): Lista de nós que compõem a rota.
         """
         route = nx.shortest_path(self.network.G, alice, bob)
-        print("Rotas calculadas", route)
         return route
-    
-    
     
     def calculate_all_routes(self, alice, bob):
         """
@@ -42,10 +39,18 @@ class Controller():
         Returns:
             route (list): Lista com listas de nós que compõem a rota.
         """
-        routes = list(nx.all_simple_paths(self.network.G, alice, bob))
-        routes = sorted(routes, key=len)
-        print("Rotas calculadas", routes)
-        return routes
+        return sorted(list(nx.all_simple_paths(self.network.G, alice, bob)), key=len)
+    
+    def calculate_k_shortest_routes(self, alice, bob, k=10):
+        """
+        Procura k rotas de menor custo. Para o caso de redes do tipo malha, é mais efetivo que `calculate_shortest_routes()`, já que esta retorna apenas as rotas do canal direto alice-bob.
+        Args:
+            alice, bob (node): Nós do grafo da rede.
+
+        Returns:
+            route (list): Lista com k listas de nós que compõem a rota
+        """
+        return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None), k))
     
     def calculate_shortest_routes(self, alice, bob):
         """
@@ -56,9 +61,7 @@ class Controller():
         Returns:
             route (list): Lista de nós que compõem a rota.
         """
-        routes = list(nx.all_shortest_paths(self.network.G, alice, bob))
-        print("Rotas calculadas", routes)
-        return routes
+        return list(nx.all_shortest_paths(self.network.G, alice, bob))
     
     def allocate_routes(self, request_list, routes_calculation_type='shortest'):
         """
@@ -78,9 +81,12 @@ class Controller():
             # Calcula as rotas de menor custo
             if routes_calculation_type == 'shortest':
                 routes = self.calculate_shortest_routes(alice, bob)
+            elif routes_calculation_type == 'kshortest':
+                routes = self.calculate_k_shortest_routes(alice, bob)
             elif routes_calculation_type == 'all':
                 routes = self.calculate_all_routes(alice, bob)
-                
+            
+            print("Rotas calculada", routes)
             for route in routes:
                 print("Rota avaliada", route)
                 # Lista de pares de elementos adjacentes da lista route (canais)

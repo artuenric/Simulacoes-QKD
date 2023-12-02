@@ -84,7 +84,7 @@ class Network():
         G = nx.convert_node_labels_to_integers(G)
         
         # Assign properties to the nodes and channels
-        self.G, self.channels = self.assign_to_net(self, G)
+        self.G, self.channels = self.assign_to_net(G)
     
     def set_lattice_topology(self, rows, cols):
         """
