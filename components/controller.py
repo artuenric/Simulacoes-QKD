@@ -82,21 +82,23 @@ class Controller():
         bb84_b92_used_links = set()
         # Contador de rotas E91 (para que não haja muitos E91 com links compartilhados)
         e91_count = 0
-        
+        # Ordenando as requisições por prioridade
+        sorted_request_list = sorted(request_list, key=lambda x: x[3], reverse=True)
                         
-        for alice, bob, app, priority in request_list.copy():
+        for alice, bob, app, priority in sorted_request_list:
+            
             # Calcula as rotas de menor custo
             if routes_calculation_type == 'shortest':
                 routes = self.calculate_shortest_routes(alice, bob)
-            elif routes_calculation_type == 'kshortest':
+            elif routes_calculation_type == 'kshortest': 
                 routes = self.calculate_k_shortest_routes(alice, bob)
             elif routes_calculation_type == 'all':
                 routes = self.calculate_all_routes(alice, bob)
-
+                
+            # Itera sobre as rotas
             for route in routes:
                 # Lista de pares de elementos adjacentes da lista route (canais)
                 route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
-                
                 # Checa se nenhum link dessa rota já foi usado em uma rota anterior
                 if not any(link in all_used_links for link in route_links):
                         # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
@@ -155,14 +157,12 @@ class Controller():
             #print(f'Rotas alocadas: {allocated_routes}')
             #print(f'Apps: {list_app}')
             
-            requests_info = sorted(requests_info, key=lambda x: x['Priority'])
             
             for request in requests_info:
                 # Informações da requisição
                 alice, bob = request["Route"][0], request["Route"][-1]
                 app = request["App"]
                 route = request["Route"]
-                print(f"Prioridade {request['Priority']} - {app} - {alice} -> {bob}")
                 
                 # Executa a aplicação QKD
                 if app == 'B92':
