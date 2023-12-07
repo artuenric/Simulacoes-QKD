@@ -94,7 +94,9 @@ def check_key(key_bob, key_alice):
     
     return shared_key
 
-def generate_qkd_request(rede, num_requests, diff_nodes=5):
+# Simulação de QKD
+
+def generate_qkd_request(rede, num_requests, avaliable_apps=["BB84", "E91", "B92"] , diff_nodes=5):
         """
         Gera uma lista de requisições aleatórias de QKD.
 
@@ -106,13 +108,64 @@ def generate_qkd_request(rede, num_requests, diff_nodes=5):
             requests (list): Lista com requisições.
         """
         requests = []
-        avaliable_apps = ["B92"]
         
         for i in range(num_requests):
             alice, bob = rede.random_alice_bob(diff_nodes)
-            
+            priority = random.randint(1, 5)
             app = random.choice(avaliable_apps)
-            requests.append((alice, bob, app))
+            requests.append((alice, bob, app, priority))
         
         return requests
+
+def run_simulations(rede, controlador, n_simulacoes, n_requests, routes_calculation_type='shortest'):
+    """
+    Roda as simulações para os protocolos BB84, E91 e B92.
+
+    Args:
+        rede (Network): Rede.
+        controlador (Controller): Controlador.
+        n_simulacoes (int): Número de simulações.
+        n_requests (int): Número de requisições.
+        routes_calculation_type (str): Tipo de roteamento. Defaults to 'shortest'.
     
+    Returns:
+        taxas_sucesso_chaves_geral (list): Lista com as taxas de sucesso das chaves para cada simulação.
+        vazao (list): Lista com a vazão para cada simulação.
+    """
+    
+    
+    taxas_sucesso_chaves_geral = []
+    vazao = []
+
+    for indice, simulacao in enumerate(range(n_simulacoes)):
+        taxas_sucesso_chaves_e91 = []
+        taxas_sucesso_chaves_bb84 = []
+        taxas_sucesso_chaves_b92 = []
+
+        requests = generate_qkd_request(rede, n_requests)
+        resultados_simulacao = controlador.send_requests(requests, routes_calculation_type)
+
+        for indice_execucao in resultados_simulacao:
+            resultado_individual_simulacao = resultados_simulacao[indice_execucao]
+            sucesso_chave = resultado_individual_simulacao['key sucess']
+
+            if resultado_individual_simulacao['app'] == 'BB84':
+                taxas_sucesso_chaves_bb84.append(sucesso_chave)
+            elif resultado_individual_simulacao['app'] == 'E91':
+                taxas_sucesso_chaves_e91.append(sucesso_chave)
+            elif resultado_individual_simulacao['app'] == 'B92':
+                taxas_sucesso_chaves_b92.append(sucesso_chave)
+
+        media_sucesso_chaves_bb84 = sum(taxas_sucesso_chaves_bb84) / len(taxas_sucesso_chaves_bb84) if taxas_sucesso_chaves_bb84 else 0
+        media_sucesso_chaves_e91 = sum(taxas_sucesso_chaves_e91) / len(taxas_sucesso_chaves_e91) if taxas_sucesso_chaves_e91 else 0
+        media_sucesso_chaves_b92 = sum(taxas_sucesso_chaves_b92) / len(taxas_sucesso_chaves_b92) if taxas_sucesso_chaves_b92 else 0
+
+        lista_combinada = [media_sucesso_chaves_bb84, media_sucesso_chaves_e91, media_sucesso_chaves_b92]
+        taxas_sucesso_chaves_geral.append(sum(lista_combinada) / len(lista_combinada) if lista_combinada else 0)
+
+        n_execucoes = len(resultados_simulacao)
+        vazao.append(n_requests / n_execucoes if n_execucoes else 0)
+
+    return taxas_sucesso_chaves_geral, vazao
+
+

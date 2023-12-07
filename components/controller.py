@@ -1,12 +1,13 @@
 import networkx as nx
 from components.protocols import *
 from itertools import islice
+
 class Controller():
     """
     Um objeto que atua como Controlador SDN para a rede quântica.
     """
-    def __init__(self) -> None:
-        self.network = None
+    def __init__(self, network) -> None:
+        self.network = network
     
     def set_network(self, network):
         """
@@ -52,6 +53,52 @@ class Controller():
         """
         return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None),k ))
     
+    
+    def dfs_paths(self, source, target, length, path=None):
+        """
+        Realiza uma busca em profundidade (DFS) em busca de caminhos de um comprimento específico entre dois nós.
+
+        Args:
+            source (node): Nó de origem.
+            target (node): Nó de destino.
+            length (int): Comprimento desejado do caminho.
+            path (list, optional): Caminho parcial atual. Defaults to None.
+
+        Yields:
+            list: Lista de nós que compõem um caminho de comprimento específico entre source e target.
+        """
+        G = self.network.G
+         # Inicializa o caminho se não estiver definido
+        if path is None:
+            path = [source]
+        # Verifica se o comprimento do caminho atingiu o objetivo
+        if len(path) == length:
+            if path[-1] == target:
+                yield path
+            return
+        # Explora os vizinhos do nó de origem
+        for neighbor in G.neighbors(source):
+            # Garante que o vizinho não esteja no caminho atual
+            if neighbor not in path:
+                # Recursivamente busca caminhos a partir do vizinho
+                yield from self.dfs_paths(neighbor, target, length, path + [neighbor])
+
+    def calculate_routes_of_k_length(self, source, target, length):
+        """
+        Encontra todos os caminhos de um comprimento específico entre dois nós.
+
+        Args:
+            source (node): Nó de origem.
+            target (node): Nó de destino.
+            length (int): Comprimento desejado do caminho.
+
+        Returns:
+            list: Lista de caminhos entre source e target com o comprimento especificado.
+        """
+         # Chama a função de busca em profundidade com comprimento + 1 porque length inclui o nó de origem
+        return list(self.dfs_paths(source, target, length + 1))
+
+
     def calculate_shortest_routes(self, alice, bob):
         """
         Procura a rota de menor custo.
@@ -94,6 +141,8 @@ class Controller():
                 routes = self.calculate_k_shortest_routes(alice, bob)
             elif routes_calculation_type == 'all':
                 routes = self.calculate_all_routes(alice, bob)
+            elif routes_calculation_type == 'klength':
+                routes = self.calculate_routes_of_k_length(alice, bob, 5)
                 
             # Itera sobre as rotas
             for route in routes:
