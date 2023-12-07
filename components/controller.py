@@ -50,7 +50,7 @@ class Controller():
         Returns:
             route (list): Lista com k listas de nós que compõem a rota
         """
-        return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None), k))
+        return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None),k ))
     
     def calculate_shortest_routes(self, alice, bob):
         """
