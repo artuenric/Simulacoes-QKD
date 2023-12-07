@@ -12,7 +12,7 @@ class Network():
         self.channels = None
         self.topology = None
         self.controller = None
-        self.fidelity = 0.10
+        self.fidelity = 0.95
         
         
     def draw(self):

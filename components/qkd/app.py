@@ -96,7 +96,7 @@ def check_key(key_bob, key_alice):
 
 # Simulação de QKD
 
-def generate_qkd_request(rede, num_requests, avaliable_apps=["BB84", "E91", "B92"] , diff_nodes=5):
+def generate_qkd_request(rede, num_requests, avaliable_apps, diff_nodes=5):
         """
         Gera uma lista de requisições aleatórias de QKD.
 
@@ -117,7 +117,7 @@ def generate_qkd_request(rede, num_requests, avaliable_apps=["BB84", "E91", "B92
         
         return requests
 
-def run_simulations(rede, controlador, n_simulacoes, n_requests, routes_calculation_type='shortest'):
+def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps, routes_calculation_type='shortest'):
     """
     Roda as simulações para os protocolos BB84, E91 e B92.
 
@@ -141,8 +141,8 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, routes_calculat
         taxas_sucesso_chaves_e91 = []
         taxas_sucesso_chaves_bb84 = []
         taxas_sucesso_chaves_b92 = []
-
-        requests = generate_qkd_request(rede, n_requests)
+        
+        requests = generate_qkd_request(rede, n_requests, avaliable_apps)
         resultados_simulacao = controlador.send_requests(requests, routes_calculation_type)
 
         for indice_execucao in resultados_simulacao:
@@ -169,3 +169,11 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, routes_calculat
     return taxas_sucesso_chaves_geral, vazao
 
 
+def formatar_numero(numero):
+    # Transforma o número em uma string com 7 casas decimais
+    numero_formatado = "{:.7f}".format(numero)
+
+    # Substitui o ponto pela vírgula
+    numero_formatado = numero_formatado.replace('.', ',')
+
+    return numero_formatado
