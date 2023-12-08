@@ -13,31 +13,39 @@ class Network():
         self.topology = None
         self.controller = None
         self.fidelity = 0.95
-        
+            
+    def newDraw(self):
+        pos = nx.spring_layout(self.G)
+        node_colors = [self.G.nodes[n]['color'] for n in self.G.nodes]
+        nx.draw(self.G, pos, node_color=node_colors, with_labels=True, font_weight='bold')
+        plt.show()
         
     def draw(self):
-        # Plot the network
-        pos = nx.spring_layout(self.G)  # Compute node positions for visualization
+        # Plotar a rede
+        pos = nx.spring_layout(self.G)  # Calcular posições dos nós para visualização
 
-        # Draw nodes with their weights
+        # Desenhar nós com seus pesos
         nx.draw_networkx_nodes(self.G, pos, node_color='#5DCCF8', node_size=500)
-        
-        # Draw node indices
+
+        # Desenhar índices dos nós
         node_indices = {node: node for node in self.G.nodes}
         nx.draw_networkx_labels(self.G, pos, labels=node_indices, font_color='white')
+
+        # Peso das arestas
         edge_weights = [self.channels.get((u, v), {}).get("fidelity_value", 0) for u, v in self.G.edges]
         
-        # Draw edges with their weights
+        # Desenhar arestas com seus pesos
         edges = nx.draw_networkx_edges(self.G, pos, width=2, edge_color=edge_weights, edge_cmap=plt.cm.viridis)
-                
-        # Add a color bar to represent the weights
+
+        # Adicionar uma barra de cores para representar os pesos
         cbar = plt.colorbar(edges, ax=plt.gca())
-        cbar.ax.set_ylabel("Fidelity")
-        
-        # Display the initial plot
+        cbar.ax.set_ylabel("Fidelidade")
+                
+        # Exibir o gráfico inicial
         plt.title("Topology Network")
-        #plt.axis("off")
+        # plt.axis("off")
         plt.show()
+
          
     def set_controller(self, controller):
         """
@@ -159,7 +167,7 @@ class Network():
         # Assign random weights and initial memory to nodes
         self.G, self.channels = self.assign_to_net(G)
     
-    
+    ### Topologias especiais ###
     def set_USA_topology(self):
         """
         Cria uma rede com topologia dos EUA.
@@ -183,7 +191,54 @@ class Network():
         
         self.G, self.channels = self.assign_to_net(G)
         
-    
+    def set_china_topology(self):
+        """
+        Cria uma topologia específica da China.
+        """
+        G = nx.Graph()
+
+        # Adiciona nós
+        for i in range(1, 41):
+            G.add_node(i, color='red' if i <= 13 else 'green')
+
+        # Adiciona nós TR
+        for i in range(1, 4):
+            G.add_node(f'TR-{i}', color='blue')
+
+        # Adiciona nós OS
+        for i in range(1, 4):
+            G.add_node(f'OS-{i}', color='purple')
+
+        # Conecta nós em estrelas
+        for i in range(1, 6):
+            G.add_edge(f'OS-1', i)
+
+        for i in range(6, 8):
+            G.add_edge(f'OS-2', i)
+
+        for i in range(8, 14):
+            G.add_edge(f'OS-3', i)
+
+        for i in range(14, 27):
+            G.add_edge(f'TR-1', i)
+
+        for i in range(27, 33):
+            G.add_edge(f'TR-2', i)
+
+        for i in range(33, 41):
+            G.add_edge(f'TR-3', i)
+
+        # Adiciona conexões diretas
+        G.add_edge('OS-1', 'TR-2')
+        G.add_edge('OS-2', 'TR-2')
+        G.add_edge('OS-3', 'TR-3')
+        G.add_edge('TR-3', 'TR-2')
+        G.add_edge('TR-2', 'TR-1')
+        G.add_edge('TR-3', 'TR-1')
+        
+        self.G, self.channels = self.assign_to_net(G)
+        
+        
     def random_alice_bob(self, diff_nodes=5):
         """
         Escolhe um nó aleatório na rede para Alice e outro para Bob. Útil para protocolos com um remetente e um receptor.
@@ -194,8 +249,16 @@ class Network():
         Returns:
             alice, bob (int) : Número correspondente ao nó do grafo.
         """
+        
         sender = random.choice(list(self.G.nodes))
-        receiver = sender + diff_nodes
+        receiver = random.choice(list(self.G.nodes))
+        
+        # Garante que nem sender, nem receiver sejam String (Nós que agem apenas como switch ou repetidores)
+        while isinstance(sender, str):
+            sender = random.choice(list(self.G.nodes))
+        while isinstance(receiver, str):
+            receiver = random.choice(list(self.G.nodes))
+        
         if receiver >= self.G.number_of_nodes():
             receiver -= self.G.number_of_nodes()  
         

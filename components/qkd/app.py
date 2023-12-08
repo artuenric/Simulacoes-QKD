@@ -133,11 +133,10 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps,
         vazao (list): Lista com a vazão para cada simulação.
     """
     
-    
     taxas_sucesso_chaves_geral = []
     vazao = []
 
-    for indice, simulacao in enumerate(range(n_simulacoes)):
+    for simulacao in range(n_simulacoes):
         taxas_sucesso_chaves_e91 = []
         taxas_sucesso_chaves_bb84 = []
         taxas_sucesso_chaves_b92 = []
@@ -151,20 +150,21 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps,
 
             if resultado_individual_simulacao['app'] == 'BB84':
                 taxas_sucesso_chaves_bb84.append(sucesso_chave)
+                
             elif resultado_individual_simulacao['app'] == 'E91':
                 taxas_sucesso_chaves_e91.append(sucesso_chave)
+                
             elif resultado_individual_simulacao['app'] == 'B92':
                 taxas_sucesso_chaves_b92.append(sucesso_chave)
 
-        media_sucesso_chaves_bb84 = sum(taxas_sucesso_chaves_bb84) / len(taxas_sucesso_chaves_bb84) if taxas_sucesso_chaves_bb84 else 0
-        media_sucesso_chaves_e91 = sum(taxas_sucesso_chaves_e91) / len(taxas_sucesso_chaves_e91) if taxas_sucesso_chaves_e91 else 0
-        media_sucesso_chaves_b92 = sum(taxas_sucesso_chaves_b92) / len(taxas_sucesso_chaves_b92) if taxas_sucesso_chaves_b92 else 0
-
-        lista_combinada = [media_sucesso_chaves_bb84, media_sucesso_chaves_e91, media_sucesso_chaves_b92]
-        taxas_sucesso_chaves_geral.append(sum(lista_combinada) / len(lista_combinada) if lista_combinada else 0)
-
+        # Salvando o sucesso nas chaves geral da simulação
+        lista_combinada = [taxa for sublist in [taxas_sucesso_chaves_bb84, taxas_sucesso_chaves_e91, taxas_sucesso_chaves_b92] for taxa in sublist]
+        taxas_sucesso_chaves_geral.append(sum(lista_combinada) / len(lista_combinada))
+        
+        # Calculando a vazão
         n_execucoes = len(resultados_simulacao)
-        vazao.append(n_requests / n_execucoes if n_execucoes else 0)
+        vazao.append(n_requests / n_execucoes)
+
 
     return taxas_sucesso_chaves_geral, vazao
 
