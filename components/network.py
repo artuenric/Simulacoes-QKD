@@ -77,6 +77,24 @@ class Network():
         
         return G, channels
 
+    def set_topology(self, topology, *args):
+        if topology == "Fully Connected":
+            self.set_fully_connected_topology(*args)
+        elif topology == "Lattice": 
+            self.set_lattice_topology(*args)
+        elif topology == "Ring":
+            self.set_ring_topology(*args)   
+        elif topology == "Star":
+            self.set_star_topology(*args)
+        elif topology == "Line":
+            self.set_line_topology_network(*args)
+        elif topology == "USA":
+            self.set_USA_topology()
+        elif topology == "China":
+            self.set_china_topology()
+        else:
+            raise Exception("Topology not found.")    
+
     ### Topologias genéricas ###
     def set_fully_connected_topology(self, num_nodes):
         """

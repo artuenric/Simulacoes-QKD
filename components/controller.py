@@ -143,11 +143,14 @@ class Controller():
                 routes = self.calculate_all_routes(alice, bob)
             elif routes_calculation_type == 'klength':
                 routes = self.calculate_routes_of_k_length(alice, bob, 5)
-                
+            
+            #print(f'Rotas: {routes}')
             # Itera sobre as rotas
             for route in routes:
+                #print(f'Rota Avaliada: {route}')
                 # Lista de pares de elementos adjacentes da lista route (canais)
                 route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
+
                 # Checa se nenhum link dessa rota já foi usado em uma rota anterior
                 if not any(link in all_used_links for link in route_links):
                         # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
@@ -198,14 +201,14 @@ class Controller():
         
         # Enquanto houver requisições na lista de requisições
         while len(request_list) > 0:
+            # print("Requisições: ", request_list, "\n")
             # Alocando as rotas para os pedidos possíveis de serem atendidos, ou seja, que não compartilham links
             requests_info = self.allocate_routes(request_list, routes_calculation_type)
                         
             #LOG
-            #print(f'{exec_index}ª execução.')
+            print(f'{exec_index}ª execução.')
             #print(f'Rotas alocadas: {allocated_routes}')
             #print(f'Apps: {list_app}')
-            
             
             for request in requests_info:
                 # Informações da requisição
@@ -226,3 +229,118 @@ class Controller():
             exec_index += 1
         
         return results
+    
+    ## Novo Request
+    def send_requests_object(self, request_list, routes_calculation_type):
+        """
+        Envia as requisições para a rede que as executa a partir da lista.
+        
+        Args:
+            request_list (list): Lista de requisições -> [alice, bob, app].
+        """
+
+        # Índice da execução
+        exec_index = 1
+        results = dict()
+        
+        # Enquanto houver requisições na lista de requisições
+        while len(request_list) > 0:
+            #LOG
+            print(f'{exec_index}ª EXECUÇÃO:')
+            print("Requisições: ", list(r.__str__() for r in request_list))
+            # Alocando as rotas para os pedidos possíveis de serem atendidos, ou seja, que não compartilham links
+            requests_info = self.allocate_routes_object(request_list, routes_calculation_type)
+            
+            for request in requests_info:
+                # Executa a aplicação QKD
+                if request.app == 'B92':
+                    exec_data = run_qkd_b92(self.network, request.route)
+                elif request.app == 'BB84':
+                    exec_data = run_qkd_bb84(self.network, request.route)
+                elif request.app == 'E91':
+                    exec_data = run_qkd_e91(self.network, request.route)
+                # Atualizando a chave obtida pelo request
+                request.obter_chaves(len(exec_data['shared key']))
+                # Atualiza a lista de requisições
+                if request.chaves <= 0:
+                    request_list.remove(request)
+            
+            # Coletando dados
+            results[exec_index] = exec_data
+            
+            exec_index += 1
+        
+        return results
+    
+    def allocate_routes_object(self, request_list, routes_calculation_type='shortest'):
+        """
+        Aloca as rotas para os pedidos e atualiza a lista de requisições.
+        
+        Args:
+            request_list (list): Lista de requisições -> [alice, bob, app].
+        
+        Returns:
+            info (list): Lista de dicionários -> [{'Priority': priority, 'Route': route, 'App': app}].
+        """
+
+        # Informações das requisições
+        info = []
+        # Todos os links já utilizados
+        all_used_links = set()
+        # Links utilizados apenas por BB84 e B92
+        bb84_b92_used_links = set()
+        # Contador de rotas E91 (para que não haja muitos E91 com links compartilhados)
+        e91_count = 0
+        # Ordenando as requisições por prioridade
+        sorted_request_list = sorted(request_list, key=lambda x: x.priority , reverse=True)
+        print("Requests ordenados por prioridade: ", list(r.__str__() for r in sorted_request_list))
+        for request in sorted_request_list:
+            # Calcula as rotas de menor custo
+            if routes_calculation_type == 'shortest':
+                routes = self.calculate_shortest_routes(request.alice, request.bob)
+            elif routes_calculation_type == 'kshortest': 
+                routes = self.calculate_k_shortest_routes(request.alice, request.bob)
+            elif routes_calculation_type == 'all':
+                routes = self.calculate_all_routes(request.alice, request.bob)
+            elif routes_calculation_type == 'klength':
+                routes = self.calculate_routes_of_k_length(request.alice, request.bob, 5)
+            
+            print(f'Rotas: {routes}')
+            # Itera sobre as rotas
+            for route in routes:
+                #print(f'Rota Avaliada: {route}')
+                # Lista de pares de elementos adjacentes da lista route (canais)
+                route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
+                print("Rota atual trabalhada: ", route)
+                # Checa se nenhum link dessa rota já foi usado em uma rota anterior
+                if not any(link in all_used_links for link in route_links):
+                        # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
+                        if request.app == 'BB84' or request.app == 'B92':
+                            bb84_b92_used_links.update(route_links)
+                        
+                        # Adicionando as informações de rota, app e prioridade
+                        request.route = route
+                        info.append(request)
+                        
+                        # Adiciona os links usados no conjunto de links usados
+                        all_used_links.update(route_links)
+ 
+                        break
+                    
+                elif request.app == 'E91':
+                    # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
+                    if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
+                        # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
+                        if e91_count < 3:
+                            # Adicionando as informações de rota, app e prioridade
+                            request.route = route
+                            info.append(request)
+                            
+                            # Adicionando o link ao conjunto de links usados
+                            all_used_links.update(route_links)
+
+                            e91_count += 1
+                        
+                        break
+        
+        return info

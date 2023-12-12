@@ -1,5 +1,5 @@
-
 import random
+from components.qkd.request import Request
 
 def create_key(size):
     """
@@ -116,7 +116,7 @@ def generate_qkd_request(rede, num_requests, avaliable_apps, diff_nodes=5):
             requests.append((alice, bob, app, priority))
         
         return requests
-
+    
 def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps, routes_calculation_type='shortest'):
     """
     Roda as simulações para os protocolos BB84, E91 e B92.
@@ -137,11 +137,13 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps,
     vazao = []
 
     for simulacao in range(n_simulacoes):
+        print("Simulação: ", simulacao)
         taxas_sucesso_chaves_e91 = []
         taxas_sucesso_chaves_bb84 = []
         taxas_sucesso_chaves_b92 = []
         
         requests = generate_qkd_request(rede, n_requests, avaliable_apps)
+        print("Requests: ", requests)
         resultados_simulacao = controlador.send_requests(requests, routes_calculation_type)
 
         for indice_execucao in resultados_simulacao:
@@ -165,8 +167,79 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, avaliable_apps,
         n_execucoes = len(resultados_simulacao)
         vazao.append(n_requests / n_execucoes)
 
-
     return taxas_sucesso_chaves_geral, vazao
+
+def generate_qkd_request_object(rede, num_requests, apps, diff_nodes=5):
+        """
+        Gera uma lista de requisições aleatórias de QKD.
+
+        Args:
+            num_requests (int): Número de requisições.
+            diff_nodes (int): Número entre os nós. Defauts to 5.
+            apps (list): Lista de apps disponíveis.
+            
+        Returns:
+            requests (list): Lista com requisições.
+        """
+        requests = []
+        for i in range(num_requests):
+            r = Request(random.choice(apps), *rede.random_alice_bob(diff_nodes), random.randint(1, 5))
+            requests.append(r)
+        return requests
+
+## Novo request
+def run_simulations_object(rede, controlador, n_simulacoes, n_requests, apps, routes_calculation_type='shortest'):
+    """
+    Roda as simulações para os protocolos BB84, E91 e B92.
+
+    Args:
+        rede (Network): Rede.
+        controlador (Controller): Controlador.
+        n_simulacoes (int): Número de simulações.
+        n_requests (int): Número de requisições.
+        routes_calculation_type (str): Tipo de roteamento. Defaults to 'shortest'.
+    
+    Returns:
+        taxas_sucesso_chaves_geral (list): Lista com as taxas de sucesso das chaves para cada simulação.
+        vazao (list): Lista com a vazão para cada simulação.
+    """
+    
+    taxas_sucesso_chaves_geral = []
+    vazao = []
+
+    
+    for simulacao in range(n_simulacoes):
+        print("Simulação: ", simulacao)
+        taxas_sucesso_chaves_e91 = []
+        taxas_sucesso_chaves_bb84 = []
+        taxas_sucesso_chaves_b92 = []
+        
+        requests = generate_qkd_request_object(rede, n_requests, apps)
+        resultados_simulacao = controlador.send_requests_object(requests, routes_calculation_type)
+        print('Requests: ', list(r.__str__() for r in requests))
+        
+        for indice_execucao in resultados_simulacao:
+            resultado_individual_simulacao = resultados_simulacao[indice_execucao]
+            sucesso_chave = resultado_individual_simulacao['key sucess']
+
+            if resultado_individual_simulacao['app'] == 'BB84':
+                taxas_sucesso_chaves_bb84.append(sucesso_chave)
+                
+            elif resultado_individual_simulacao['app'] == 'E91':
+                taxas_sucesso_chaves_e91.append(sucesso_chave)
+                
+            elif resultado_individual_simulacao['app'] == 'B92':
+                taxas_sucesso_chaves_b92.append(sucesso_chave)
+
+        # Salvando o sucesso nas chaves geral da simulação
+        lista_combinada = [taxa for sublist in [taxas_sucesso_chaves_bb84, taxas_sucesso_chaves_e91, taxas_sucesso_chaves_b92] for taxa in sublist]
+        taxas_sucesso_chaves_geral.append(sum(lista_combinada) / len(lista_combinada))
+        
+        # Calculando a vazão
+        n_execucoes = len(resultados_simulacao)
+        vazao.append(n_requests / n_execucoes)
+
+    return vazao, taxas_sucesso_chaves_geral
 
 
 def formatar_numero(numero):

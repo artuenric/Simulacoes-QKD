@@ -3,7 +3,7 @@ from components.qkd.bb84 import *
 from components.qkd.e91 import *
 
 # QKD B92
-def run_qkd_b92(network, route, key_size=10):
+def run_qkd_b92(network, route, key_size=100):
     """
     Executa o protocolo QKD B92.
 
@@ -48,7 +48,7 @@ def run_qkd_b92(network, route, key_size=10):
     return results
 
 # QKD BB84
-def run_qkd_bb84(network, route, key_size=10):
+def run_qkd_bb84(network, route, key_size=100):
     """
     Executa o protocolo QKD BB84.
 
@@ -101,7 +101,7 @@ def run_qkd_bb84(network, route, key_size=10):
     return results
 
 # QKD E91
-def run_qkd_e91(network, route, key_size=10):
+def run_qkd_e91(network, route, key_size=100):
     """
     Executa o protocolo QKD E91.
 
