@@ -257,12 +257,9 @@ class Network():
         self.G, self.channels = self.assign_to_net(G)
         
         
-    def random_alice_bob(self, diff_nodes=5):
+    def random_alice_bob(self):
         """
         Escolhe um nó aleatório na rede para Alice e outro para Bob. Útil para protocolos com um remetente e um receptor.
-
-        Args:
-            diff_nodes (int): Número entre os nós.
 
         Returns:
             alice, bob (int) : Número correspondente ao nó do grafo.
@@ -320,7 +317,7 @@ class Network():
     
     def send_eprs(self, route, eprs):
         """
-        Transmite os EPRs em uma lista pela rota escolhida.
+        Envia os EPRs em uma lista pela rota escolhida. O qubit sofre interferência de acordo com a fidelidade do canal.
 
         Args:
             route (rota): Rota definida para o envio do qubit.
