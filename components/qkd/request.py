@@ -7,7 +7,7 @@ class Request:
         self.classe = classe
         self.app = app
         self.priority = priority
-        self.keys = self.set_keys()
+        self.set_keys()
         self.alice = alice
         self.bob = bob
         self.route = []

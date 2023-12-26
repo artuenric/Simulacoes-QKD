@@ -19,7 +19,7 @@ class Controller():
         self.network = network
         network.set_controller(self)
     
-    def calculate_shortest_routes(self, alice, bob):
+    def calculate_shortest_route(self, alice, bob):
         """
         Procura a rota de menor custo.
         Args:
@@ -28,7 +28,9 @@ class Controller():
         Returns:
             route (list): Lista de nós que compõem a rota.
         """
-        route = nx.shortest_path(self.network.G, alice, bob)
+        route = []
+        route.append(nx.shortest_path(self.network.G, alice, bob))
+        
         return route
     
     def calculate_all_routes(self, alice, bob):
@@ -127,7 +129,7 @@ class Controller():
             print(f'{exec_index}ª EXECUÇÃO:')
             print("Requisições: ", list(r.__str__() for r in request_list))
             # Alocando as rotas para os pedidos possíveis de serem atendidos, ou seja, que não compartilham links
-            requests_info = self.allocate_routes_object(request_list, routes_calculation_type)
+            requests_info = self.allocate_routes(request_list, routes_calculation_type)
             
             for request in requests_info:
                 # Executa a aplicação QKD
@@ -138,9 +140,9 @@ class Controller():
                 elif request.app == 'E91':
                     exec_data = run_qkd_e91(self.network, request.route)
                 # Atualizando a chave obtida pelo request
-                request.obter_chaves(len(exec_data['shared key']))
+                request.update_keys(len(exec_data['shared key']))
                 # Atualiza a lista de requisições
-                if request.chaves <= 0:
+                if request.keys <= 0:
                     request_list.remove(request)
             
             # Coletando dados
