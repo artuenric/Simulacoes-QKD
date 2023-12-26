@@ -96,7 +96,7 @@ def check_key(key_bob, key_alice):
     return shared_key
 
 # Funções para simulação
-def generate_qkd_requests(rede, num_requests, apps, diff_nodes=5):
+def generate_qkd_requests(rede, num_requests, apps, case):
         """
         Gera uma lista de requisições aleatórias de QKD.
 
@@ -108,13 +108,32 @@ def generate_qkd_requests(rede, num_requests, apps, diff_nodes=5):
         Returns:
             requests (list): Lista com requisições.
         """
+        classes = ["Class A", "Class B", "Class C", "Class D", "Class E"]
         requests = []
+        
+        if case == 0:
+            class_distribution = [1/5] * 5
+        elif case == 1:
+            class_distribution = [0.2] * 5
+        elif case == 2:
+            class_distribution = [0.1, 0.1, 0.3, 0.25, 0.25]
+        elif case == 3:
+            class_distribution = [0.25, 0.25, 0.2, 0.1, 0.1]
+        elif case == 4:
+            class_distribution = [0.3, 0.3, 0.1, 0.15, 0.15]
+        else:
+            raise ValueError("Invalid case parameter")
+            
         for i in range(num_requests):
-            r = Request(random.choice(apps), *rede.random_alice_bob(diff_nodes), random.randint(1, 5))
+            classe = random.choices(classes, class_distribution)[0]
+            app = random.choice(apps)
+            priority = random.randint(1, 5)
+            alice, bob = rede.random_alice_bob()
+            r = Request(classe, app, priority, alice, bob)
             requests.append(r)
         return requests
 
-def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_calculation_type='shortest'):
+def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_calculation_type):
     """
     Roda as simulações para os protocolos BB84, E91 e B92.
 
@@ -123,7 +142,7 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_ca
         controlador (Controller): Controlador.
         n_simulacoes (int): Número de simulações.
         n_requests (int): Número de requisições.
-        routes_calculation_type (str): Tipo de roteamento. Defaults to 'shortest'.
+        routes_calculation_type (str): Tipo de roteamento.
     
     Returns:
         taxas_sucesso_chaves_geral (list): Lista com as taxas de sucesso das chaves para cada simulação.
@@ -167,8 +186,17 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_ca
 
     return vazao, taxas_sucesso_chaves_geral
 
-
+# Funções para plotagem
 def formatar_numero(numero):
+    """
+    Ajuda a formatar um número para coloca-lo em uma tabela.
+
+    Args:
+        numero (int): Número a ser formatado.
+
+    Returns:
+        str: Número formatado.
+    """
     # Transforma o número em uma string com 7 casas decimais
     numero_formatado = "{:.7f}".format(numero)
 

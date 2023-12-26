@@ -19,7 +19,7 @@ class Controller():
         self.network = network
         network.set_controller(self)
     
-    def calculate_route(self, alice, bob):
+    def calculate_shortest_routes(self, alice, bob):
         """
         Procura a rota de menor custo.
         Args:
@@ -98,7 +98,6 @@ class Controller():
          # Chama a função de busca em profundidade com comprimento + 1 porque length inclui o nó de origem
         return list(self.dfs_paths(source, target, length + 1))
 
-
     def calculate_shortest_routes(self, alice, bob):
         """
         Procura a rota de menor custo.
@@ -151,13 +150,14 @@ class Controller():
         
         return results
     
-    def allocate_routes(self, request_list, routes_calculation_type='shortest'):
+    def allocate_routes(self, request_list, routes_calculation_type):
         """
         Aloca as rotas para os pedidos e atualiza a lista de requisições.
         
         Args:
             request_list (list): Lista de requisições -> [alice, bob, app].
-        
+            routes_calculation_type (str): shortest, kshortest, all, klength.
+            
         Returns:
             info (list): Lista de dicionários -> [{'Priority': priority, 'Route': route, 'App': app}].
         """
@@ -176,7 +176,7 @@ class Controller():
         for request in sorted_request_list:
             # Calcula as rotas de menor custo
             if routes_calculation_type == 'shortest':
-                routes = self.calculate_shortest_routes(request.alice, request.bob)
+                routes = self.calculate_shortest_route(request.alice, request.bob)
             elif routes_calculation_type == 'kshortest': 
                 routes = self.calculate_k_shortest_routes(request.alice, request.bob)
             elif routes_calculation_type == 'all':
