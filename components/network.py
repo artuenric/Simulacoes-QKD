@@ -297,7 +297,7 @@ class Network():
         """
         received_qubits = []
         index_interference_qubit = set()
-        
+
         # Cada qubit irá percorrer a rota, de alice até bob
         for qubit in qubits:
             # O range vai até o penúltimo elemento da rota, pois o último é o nó de Bob

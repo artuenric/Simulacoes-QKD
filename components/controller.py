@@ -22,6 +22,7 @@ class Controller():
     def calculate_shortest_route(self, alice, bob):
         """
         Procura a rota de menor custo.
+        
         Args:
             alice, bob (node): Nós do grafo da rede.
 
