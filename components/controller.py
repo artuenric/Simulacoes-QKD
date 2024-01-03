@@ -134,12 +134,14 @@ class Controller():
             
             for request in requests_info:
                 # Executa a aplicação QKD
+                # key_size = request.key_size
+                key_size = 100
                 if request.app == 'B92':
-                    exec_data = run_qkd_b92(self.network, request.route)
+                    exec_data = run_qkd_b92(self.network, request.route, key_size)
                 elif request.app == 'BB84':
-                    exec_data = run_qkd_bb84(self.network, request.route)
+                    exec_data = run_qkd_bb84(self.network, request.route, key_size)
                 elif request.app == 'E91':
-                    exec_data = run_qkd_e91(self.network, request.route)
+                    exec_data = run_qkd_e91(self.network, request.route, key_size)
                 # Atualizando a chave obtida pelo request
                 request.update_keys(len(exec_data['shared key']))
                 # Atualiza a lista de requisições
