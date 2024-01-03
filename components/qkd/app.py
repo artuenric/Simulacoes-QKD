@@ -133,7 +133,7 @@ def generate_qkd_requests(rede, num_requests, apps, case):
             requests.append(r)
         return requests
 
-def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_calculation_type):
+def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, caso, routes_calculation_type):
     """
     Roda as simulações para os protocolos BB84, E91 e B92.
 
@@ -149,18 +149,19 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, routes_ca
         vazao (list): Lista com a vazão para cada simulação.
     """
     
+    # Variáveis para armazenar os resultados
     taxas_sucesso_chaves_geral = []
     vazao = []
 
-    
+    # Rodando as simulações
     for simulacao in range(n_simulacoes):
         print("Simulação: ", simulacao)
         taxas_sucesso_chaves_e91 = []
         taxas_sucesso_chaves_bb84 = []
         taxas_sucesso_chaves_b92 = []
         
-        requests = generate_qkd_requests(rede, n_requests, apps)
-        resultados_simulacao = controlador.send_requests_object(requests, routes_calculation_type)
+        requests = generate_qkd_requests(rede, n_requests, apps, caso)
+        resultados_simulacao = controlador.send_requests(requests, routes_calculation_type)
         print('Requests: ', list(r.__str__() for r in requests))
         
         for indice_execucao in resultados_simulacao:

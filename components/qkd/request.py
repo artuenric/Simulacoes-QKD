@@ -22,13 +22,13 @@ class Request:
         if self.classe == "Class A":
             self.keys = 100
         elif self.classe == "Class B":
-            self.keys = 200
+            self.keys = 100
         elif self.classe == "Class C":
-            self.keys = 300
+            self.keys = 100
         elif self.classe == "Class D":
-            self.keys = 400
+            self.keys = 100
         elif self.classe == "Class E":
-            self.keys = 500
+            self.keys = 100
     
     def update_keys(self, keys):
         """
