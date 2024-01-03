@@ -266,28 +266,28 @@ class Network():
 
         # Adiciona nós com seus respectivos tipos e cores
         nodes_info = {
-            'St.Pölten': {'type': 'city', 'color': 'blue'},
-            'BREIT': {'type': 'hub', 'color': 'blue'},
-            'GUD': {'type': 'hub', 'color': 'blue'},
-            'SIE': {'type': 'hub', 'color': 'blue'},
-            'QAN': {'type': 'hub', 'color': 'red'},
-            'ERD': {'type': 'hub', 'color': 'blue'},
-            'Extra':{'type': 'hub', 'color': 'red'},
+            0 : {'type': 'city', 'color': 'blue'},
+            1 : {'type': 'hub', 'color': 'blue'},
+            2 : {'type': 'hub', 'color': 'blue'},
+            3 : {'type': 'hub', 'color': 'blue'},
+            4 : {'type': 'hub', 'color': 'red'},
+            5 : {'type': 'hub', 'color': 'blue'},
+            6 :{'type': 'hub', 'color': 'red'},
         }
         for node, info in nodes_info.items():
             G.add_node(node, color=info['color'])
 
         # Adiciona as arestas sólidas
         edges = [
-            ('St.Pölten', 'BREIT'),
-            ('BREIT','SIE'),
-            ('BREIT','GUD'),
-            ('BREIT','ERD'),
-            ('GUD','SIE'),
-            ('GUD','ERD'),
-            ('ERD','SIE'),
-            ('QAN','SIE'),
-            ('ERD','Extra'),
+            (0 , 1 ),
+            (1 ,3 ),
+            (1 ,2 ),
+            (1 ,5 ),
+            (2 ,3 ),
+            (2 ,5 ),
+            (5 ,3 ),
+            (4 ,3 ),
+            (5 ,6 ),
         ]
         
         # Adiciona as arestas tracejadas
