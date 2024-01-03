@@ -92,6 +92,8 @@ class Network():
             self.set_USA_topology()
         elif topology == "China":
             self.set_china_topology()
+        elif topology == "Vienna":
+            self.set_vienna_topology()
         else:
             raise Exception("Topology not found.")    
 
@@ -256,6 +258,42 @@ class Network():
         
         self.G, self.channels = self.assign_to_net(G)
         
+    def set_vienna_topology(self):
+        """
+        Cria uma topologia específica para Viena sem a necessidade de estar dentro de uma classe.
+        """
+        G = nx.Graph()
+
+        # Adiciona nós com seus respectivos tipos e cores
+        nodes_info = {
+            'St.Pölten': {'type': 'city', 'color': 'blue'},
+            'BREIT': {'type': 'hub', 'color': 'blue'},
+            'GUD': {'type': 'hub', 'color': 'blue'},
+            'SIE': {'type': 'hub', 'color': 'blue'},
+            'QAN': {'type': 'hub', 'color': 'red'},
+            'ERD': {'type': 'hub', 'color': 'blue'},
+            'Extra':{'type': 'hub', 'color': 'red'},
+        }
+        for node, info in nodes_info.items():
+            G.add_node(node, color=info['color'])
+
+        # Adiciona as arestas sólidas
+        edges = [
+            ('St.Pölten', 'BREIT'),
+            ('BREIT','SIE'),
+            ('BREIT','GUD'),
+            ('BREIT','ERD'),
+            ('GUD','SIE'),
+            ('GUD','ERD'),
+            ('ERD','SIE'),
+            ('QAN','SIE'),
+            ('ERD','Extra'),
+        ]
+        
+        # Adiciona as arestas tracejadas
+        G.add_edges_from(edges)
+        self.G, self.channels = self.assign_to_net(G)
+
         
     def random_alice_bob(self):
         """

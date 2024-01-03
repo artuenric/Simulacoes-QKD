@@ -20,15 +20,15 @@ class Request:
         Define o número de chaves que a requisição precisa.
         """
         if self.classe == "Class A":
-            self.keys = 100
+            self.keys = 8000
         elif self.classe == "Class B":
-            self.keys = 100
+            self.keys = 12000
         elif self.classe == "Class C":
-            self.keys = 100
+            self.keys = 3000
         elif self.classe == "Class D":
-            self.keys = 100
+            self.keys = 256
         elif self.classe == "Class E":
-            self.keys = 100
+            self.keys = 256
     
     def update_keys(self, keys):
         """

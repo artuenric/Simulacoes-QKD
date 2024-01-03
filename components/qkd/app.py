@@ -111,14 +111,12 @@ def generate_qkd_requests(rede, num_requests, apps, case):
         classes = ["Class A", "Class B", "Class C", "Class D", "Class E"]
         requests = []
         
-        if case == 0:
-            class_distribution = [1/5] * 5
-        elif case == 1:
-            class_distribution = [0.2] * 5
-        elif case == 2:
+        if case == 1:
             class_distribution = [0.1, 0.1, 0.3, 0.25, 0.25]
+        elif case == 2:
+            class_distribution = [0.2] * 5
         elif case == 3:
-            class_distribution = [0.25, 0.25, 0.2, 0.1, 0.1]
+            class_distribution = [0.25, 0.25, 0.2, 0.15, 0.15]
         elif case == 4:
             class_distribution = [0.3, 0.3, 0.1, 0.15, 0.15]
         else:
@@ -131,6 +129,7 @@ def generate_qkd_requests(rede, num_requests, apps, case):
             alice, bob = rede.random_alice_bob()
             r = Request(classe, app, priority, alice, bob)
             requests.append(r)
+        print("Requests: ", list(r.__str__() for r in requests))
         return requests
 
 def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, caso, routes_calculation_type):
