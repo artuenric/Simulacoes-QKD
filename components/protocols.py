@@ -2,7 +2,7 @@ from components.qkd.b92 import *
 from components.qkd.bb84 import *
 from components.qkd.e91 import *
 
-key_size = 300
+key_size = 1000
 
 # QKD B92
 def run_qkd_b92(network, route):

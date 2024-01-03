@@ -129,7 +129,6 @@ def generate_qkd_requests(rede, num_requests, apps, case):
             alice, bob = rede.random_alice_bob()
             r = Request(classe, app, priority, alice, bob)
             requests.append(r)
-        print("Requests: ", list(r.__str__() for r in requests))
         return requests
 
 def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, caso, routes_calculation_type):
@@ -154,14 +153,12 @@ def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, caso, rou
 
     # Rodando as simulações
     for simulacao in range(n_simulacoes):
-        print("Simulação: ", simulacao)
         taxas_sucesso_chaves_e91 = []
         taxas_sucesso_chaves_bb84 = []
         taxas_sucesso_chaves_b92 = []
         
         requests = generate_qkd_requests(rede, n_requests, apps, caso)
         resultados_simulacao = controlador.send_requests(requests, routes_calculation_type)
-        print('Requests: ', list(r.__str__() for r in requests))
         
         for indice_execucao in resultados_simulacao:
             resultado_individual_simulacao = resultados_simulacao[indice_execucao]
