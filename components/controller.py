@@ -219,7 +219,7 @@ class Controller():
                     # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
                     if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
                         # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
-                        if e91_count < 3:
+                        if e91_count < self.network.neprs:
                             # Adicionando as informações de rota, app e prioridade
                             request.route = route
                             info.append(request)

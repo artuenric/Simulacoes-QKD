@@ -13,7 +13,8 @@ class Network():
         self.topology = None
         self.controller = None
         self.fidelity = 0.95
-        self.nqubits = 2000
+        self.nqubits = 100
+        self.neprs = 3
             
     def newDraw(self):
         pos = nx.spring_layout(self.G)
