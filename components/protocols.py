@@ -2,8 +2,6 @@ from components.qkd.b92 import *
 from components.qkd.bb84 import *
 from components.qkd.e91 import *
 
-key_size = 1000
-
 # QKD B92
 def run_qkd_b92(network, route):
     """
@@ -15,19 +13,21 @@ def run_qkd_b92(network, route):
         alice (networkx node): Nó remetente das chaves.
         bob (networkx node): Nó destinatário das chaves.
         num_keys (int, optional): Número de chaves geradas. Defaults to 100.
-        key_size (int, optional): Tamanho das chaves geradas. Defaults to 100.
 
     Returns:
         Dict : Dicionário de dicionários com as informações das execuções.
     """
+    # Número de qubits para geração da chave
+    nqubits = network.nqubits
+    
     # Informações para Alice
-    key_alice = create_key(key_size)
+    key_alice = create_key(nqubits)
     
     # Qubits
     qubits = prepara_qubits_b92(key_alice)
     
     # Informações para Bob
-    bases_bob = generate_bases(key_size)
+    bases_bob = generate_bases(nqubits)
     
     # Enviando os qubits
     bob_received_qubits, interference_qubits = network.send_qubits(route, qubits)
@@ -45,7 +45,7 @@ def run_qkd_b92(network, route):
     results['generated key'] = key_alice
     results['shared key'] = shared_key
     results['different bits'] = len(key_alice) - len(shared_key)
-    results['key sucess'] = len(shared_key) / key_size
+    results['key sucess'] = len(shared_key) / nqubits
 
     return results
 
@@ -60,21 +60,23 @@ def run_qkd_bb84(network, route):
         alice (networkx node): Nó remetente das chaves.
         bob (networkx node): Nó destinatário das chaves.
         num_keys (int, optional): Número de chaves geradas. Defaults to 100.
-        key_size (int, optional): Tamanho das chaves geradas. Defaults to 100.
 
     Returns:
         Dict : Dicionário de dicionários com as informações das execuções.
     """
-    # Informações para Alice
-    key_alice = create_key(key_size)
+    # Número de qubits para geração da chave
+    nqubits = network.nqubits
     
-    bases_alice = generate_bases(key_size)
+    # Informações para Alice
+    key_alice = create_key(nqubits)
+    
+    bases_alice = generate_bases(nqubits)
     
     # Qubits
     qubits = prepara_qubits_bb84(key_alice, bases_alice)
     
     # Informações para Bob
-    bases_bob = generate_bases(key_size)
+    bases_bob = generate_bases(nqubits)
     
     # Enviando os qubits
     received_qubits, interference_qubits = network.send_qubits(route, qubits)
@@ -97,7 +99,7 @@ def run_qkd_bb84(network, route):
     results['generated key'] = key_alice
     results['shared key'] = shared_key
     results['different bits'] = len(key_alice) - len(shared_key)
-    results['key sucess'] = len(shared_key) / key_size
+    results['key sucess'] = len(shared_key) / nqubits
     
     # Resultados
     return results
@@ -112,20 +114,22 @@ def run_qkd_e91(network, route):
         controller (Controller): Controlador da rede.
         alice (networkx node): Nó remetente das chaves.
         bob (networkx node): Nó destinatário das chaves.
-        key_size (int, optional): Tamanho das chaves geradas. Defaults to 100.
 
     Returns:
         Dict : Dicionário de dicionários com as informações das execuções.
     """
+    # Número de qubits para geração da chave
+    nqubits = network.nqubits    
+    
     # Informações para Alice
-    key_alice = create_key(key_size)
-    bases_alice = generate_bases(key_size)
+    key_alice = create_key(nqubits)
+    bases_alice = generate_bases(nqubits)
     
     # Eprs
     pairs = prepara_qubits_e91(key_alice, bases_alice)
     
     # Informações para Bob
-    bases_bob = generate_bases(key_size)
+    bases_bob = generate_bases(nqubits)
     
     # Enviando os qubits
     received_qubits, interference_qubits = network.send_eprs(route, pairs)
@@ -151,6 +155,6 @@ def run_qkd_e91(network, route):
     results['generated key'] = key_alice
     results['shared key'] = shared_key
     results['different bits'] = len(key_alice) - len(shared_key)
-    results['key sucess'] = len(shared_key) / key_size
+    results['key sucess'] = len(shared_key) / nqubits
     
     return results    
