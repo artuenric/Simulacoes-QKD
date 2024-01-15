@@ -60,7 +60,20 @@ class Network():
         Define a fidelidade dos canais.
         """
         self.fidelity = fidelity
+        # Atualiza a fidelidade dos canais
         self.assign_to_net(self.G)
+        
+    def set_nqubits(self, nqubits):
+        """
+        Define o número de qubits.
+        """
+        self.nqubits = nqubits
+    
+    def set_neprs(self, neprs):
+        """
+        Define o número de EPRs.
+        """
+        self.neprs = neprs
         
     def assign_to_net(self, G):
         """
