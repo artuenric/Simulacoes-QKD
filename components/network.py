@@ -12,9 +12,9 @@ class Network():
         self.channels = None
         self.topology = None
         self.controller = None
-        self.fidelity = 0.95
-        self.nqubits = 100
-        self.neprs = 3
+        self.fidelity = None
+        self.nqubits = None
+        self.neprs = None
             
     def newDraw(self):
         pos = nx.spring_layout(self.G)
@@ -54,6 +54,13 @@ class Network():
         Define o controlador da rede.
         """
         self.controller = controller
+    
+    def set_fidelity(self, fidelity):
+        """
+        Define a fidelidade dos canais.
+        """
+        self.fidelity = fidelity
+        self.assign_to_net(self.G)
         
     def assign_to_net(self, G):
         """
@@ -77,7 +84,8 @@ class Network():
             "fidelity_value": self.fidelity,
         } for u, v in G.edges})  # Add reverse direction channels
         
-        return G, channels
+        self.G = G
+        self.channels = channels
 
     def set_topology(self, topology, *args):
         if topology == "Fully Connected":
@@ -115,7 +123,7 @@ class Network():
         G = nx.convert_node_labels_to_integers(G)
         
         # Assign properties to the nodes and channels
-        self.G, self.channels = self.assign_to_net(G)
+        self.assign_to_net(G)
     
     def set_lattice_topology(self, rows, cols):
         """
@@ -133,7 +141,7 @@ class Network():
         G = nx.convert_node_labels_to_integers(G)
         
         # Assign properties to the nodes and channels
-        self.G, self.channels = self.assign_to_net(G)
+        self.assign_to_net(G)
         
 
     def set_ring_topology(self, num_nodes):
@@ -151,7 +159,7 @@ class Network():
         G = nx.convert_node_labels_to_integers(G)
         
         # Assign properties to the nodes and channels
-        self.G, self.channels = self.assign_to_net(G)
+        self.assign_to_net(G)
         
 
     def set_star_topology(self, num_nodes):
@@ -258,7 +266,7 @@ class Network():
         G.add_edge('TR-2', 'TR-1')
         G.add_edge('TR-3', 'TR-1')
         
-        self.G, self.channels = self.assign_to_net(G)
+        self.assign_to_net(G)
         
     def set_vienna_topology(self):
         """
@@ -294,7 +302,7 @@ class Network():
         
         # Adiciona as arestas tracejadas
         G.add_edges_from(edges)
-        self.G, self.channels = self.assign_to_net(G)
+        self.assign_to_net(G)
 
         
     def random_alice_bob(self):
