@@ -131,14 +131,18 @@ def generate_qkd_requests(rede, num_requests, apps, case):
             class_distribution = [0, 0, 0, 0, 1]
         else:
             raise ValueError("Invalid case parameter")
-            
+        
+        # Distribuição de apps
+        apps_distribution = [0.33, 0.33, 0.33]
+        
         for i in range(num_requests):
             classe = random.choices(classes, class_distribution)[0]
-            app = random.choice(apps)
+            app = random.choices(apps, apps_distribution)[0]
             priority = random.randint(1, 5)
             alice, bob = rede.random_alice_bob()
             r = Request(classe, app, priority, alice, bob)
             requests.append(r)
+            
         return requests
 
 def run_simulations(rede, controlador, n_simulacoes, n_requests, apps, caso, routes_calculation_type):
