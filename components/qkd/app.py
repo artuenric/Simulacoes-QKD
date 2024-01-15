@@ -112,15 +112,25 @@ def generate_qkd_requests(rede, num_requests, apps, case):
         requests = []
         
         if case == 1:
-            class_distribution = [0.1, 0.1, 0.3, 0.25, 0.25]
+            class_distribution = [0.3, 0.3, 0.2, 0.15, 0.05]
         elif case == 2:
-            class_distribution = [0.2] * 5
-        elif case == 3:
             class_distribution = [0.25, 0.25, 0.2, 0.15, 0.15]
+        elif case == 3:
+            class_distribution = [0.2] * 5
         elif case == 4:
-            class_distribution = [0.3, 0.3, 0.1, 0.15, 0.15]
+            class_distribution = [0.15, 0.15, 0.2, 0.25, 0.25]       
+        elif case == 5:
+            class_distribution = [1, 0, 0, 0, 0]
+        elif case == 6:
+            class_distribution = [0, 1, 0, 0, 0]
+        elif case == 7:
+            class_distribution = [0, 0, 1, 0, 0]
+        elif case == 8:
+            class_distribution = [0, 0, 0, 1, 0]
+        elif case == 9:
+            class_distribution = [0, 0, 0, 0, 1]
         else:
-            raise ValueError("Invalid case parameter")
+            raise ValueError("Invalid case parameter")
             
         for i in range(num_requests):
             classe = random.choices(classes, class_distribution)[0]
