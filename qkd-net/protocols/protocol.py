@@ -1,0 +1,54 @@
+# Classe mãe
+# BB84, E91, B92 serão filhas
+# Onde eu vou pôr esse Protocol??????????
+# Agora o protocolo acessa o tamanho das cahves pela rede. Talvez trocar isso...
+
+import random 
+
+class Protocol():
+    def __init__(self) -> None:
+        self.app = None
+        self.alice = None
+        self.bob = None
+        self.generated_key = None
+        self.shared_key = None
+        self.different_bits = None
+        self.key_sucess = None
+    
+    def create_key(self, size):
+        """
+        Gera uma lista de 0s e 1s para uma chave de criptografia.
+
+        Args:
+            size (int): Tamanho desejado para a chave.
+
+        Returns:
+            key (list): Uma lista com 0s e 1s aleatórios.
+        """
+        
+        key = []
+        
+        for bit in range(size):
+            key.append(random.randint(0, 1))
+        
+        return key
+    
+    def generate_bases(size):
+        """
+        Gera uma lista com as bases escolhidas para realizar a medição dos qubits.
+        
+        Args:
+            size (int): Tamanho da chave.
+        """
+        
+        bases = []
+        
+        for base in range(size):
+            bases.append(random.randint(0, 1))
+        
+        return bases
+    # Implementar as ações realizadas pelos protocolos
+    # .prepare_qubits (abstrata)
+    # .apply_measurement (abstrata)
+    # .check_key (abstrata)
+    # .run (abstrata)
