@@ -11,8 +11,8 @@ class Protocol(ABC):
     """
     def __init__(self) -> None:
         self.app = None
-        self.alice = None
-        self.bob = None
+        # self.alice = None Não sei se vão ser necessários aqui.
+        # self.bob = None Não sei se vão ser necessários aqui.
         self.network = None
         self.generated_key = None
         self.shared_key = None
@@ -52,7 +52,7 @@ class Protocol(ABC):
         
         return bases
     
-    def compare_bases(base_alice, base_bob):
+    def compare_bases(self, base_alice, base_bob):
         """
         Compara as bases de Alice e Bob.
         Args:
@@ -62,7 +62,6 @@ class Protocol(ABC):
         Returns:
             matching_bases (lista): Lista de Trues e Falses para representar o macth das bases.
         """
-        
         matching_bases = []
         
         for a, b in zip(base_alice, base_bob):
@@ -73,13 +72,13 @@ class Protocol(ABC):
         
         return matching_bases
     
-    def get_key(measured_qubits, match_bases):
+    def get_key(self, measured_qubits, match_bases):
         """
         Filtra a lista com os resultados das medições para somente aquelas que as bases deram match.
         
         Args:
-            match_bases (lista): Lista com as bases que deram match.
             measured_qubits (lista): Lista com os resultados das medições dos qubits.
+            match_bases (lista): Lista com as bases que deram match.
         
         Returns:
             bob_key (list): Chave obtida por Bob.
@@ -95,16 +94,16 @@ class Protocol(ABC):
                 
         return bob_key
     
-    def check_key(key_bob, key_alice):
+    def check_key(self, key_bob, key_alice):
         """
         Compara as chaves de Alice e Bob.
-
+        
         Args:
             key_alice (list): Chave gerada por Alice.
             key_bob (list): Chave obtida por Bob.
         """
         shared_key = []
-
+        
         for bob_bit, alice_bit in zip(key_bob, key_alice):
             if bob_bit != None:
                 if bob_bit == alice_bit:
@@ -117,7 +116,7 @@ class Protocol(ABC):
         pass
     
     @abstractmethod
-    def apply_measurement(self):
+    def aplly_measurement(self):
         pass
     
     @abstractmethod

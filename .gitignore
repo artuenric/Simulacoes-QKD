@@ -1,3 +1,4 @@
 # Ignore all _pycache_ directories
 *.pyc
 /.idea/
+/.vscode/

@@ -1,2 +1,2 @@
 from .qubit import Qubit
-from .epr import Epr
+from .epr import EPR

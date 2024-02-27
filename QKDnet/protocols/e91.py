@@ -1,7 +1,10 @@
-from ..quantum import Epr
+from ..quantum import EPR
 from .protocol import Protocol
 
 class E91(Protocol):
+    """ 
+    Protocolo QKD E91.
+    """
     def __init__(self, network):
         super().__init__()
         super().network = network
@@ -22,7 +25,7 @@ class E91(Protocol):
         pairs = []
         
         for bit, base in zip(key, bases):
-            epr = Epr()
+            epr = EPR()
             if bit == 1:
                 epr.X()
             if base == 1:
@@ -31,7 +34,7 @@ class E91(Protocol):
             
         return pairs
     
-    def apply_measurement(self, qubits, bases):
+    def aplly_measurement(self, qubits, bases):
         """
         Mede os qubits a partir das bases já definidas.
 
@@ -95,15 +98,7 @@ class E91(Protocol):
         shared_key = super().check_key(key_bob, key_alice)
         
         # Resultados da execução
-        super().generated_key = key_alice
-        super().shared_key = shared_key
-        super().different_bits = len(key_alice) - len(shared_key)
-        super().key_sucess = len(shared_key) / nqubits
-        
-        results = dict()
-        results['app'] = 'E91'
-        results['generated key'] = key_alice
-        results['shared key'] = shared_key
-        results['different bits'] = len(key_alice) - len(shared_key)
-        results['key sucess'] = len(shared_key) / nqubits
-        
+        self.generated_key = key_alice
+        self.shared_key = shared_key
+        self.different_bits = len(key_alice) - len(shared_key)
+        self.key_sucess = len(shared_key) / nqubits

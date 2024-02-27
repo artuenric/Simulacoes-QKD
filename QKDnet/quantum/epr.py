@@ -1,6 +1,6 @@
 from .qubit import Qubit
-print("Importando Epr")
-class Epr():
+print("Importando EPR")
+class EPR():
     """
     Um objeto que simula dois qubits em estado de Bell.
     """
