@@ -13,6 +13,7 @@ class Protocol(ABC):
         self.app = None
         self.alice = None
         self.bob = None
+        self.network = None
         self.generated_key = None
         self.shared_key = None
         self.different_bits = None
@@ -117,10 +118,6 @@ class Protocol(ABC):
     
     @abstractmethod
     def apply_measurement(self):
-        pass
-    
-    @abstractmethod
-    def check_key(self):
         pass
     
     @abstractmethod

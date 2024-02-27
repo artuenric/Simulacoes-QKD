@@ -1,3 +1,10 @@
+from QKDnet.protocols import E91
+
+protocolando = E91()
+
+
+# Classe abstrata e herança
+"""
 from abc import ABC, abstractmethod
 class Coisa(ABC):
     def __init__(self) -> None:
@@ -16,3 +23,4 @@ class Computado(Coisa):
 
 a = Computado()
 a.testante()
+"""
