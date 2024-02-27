@@ -34,7 +34,7 @@ class BB84(Protocol):
             
         return qubits
     
-    def aplly_measurement(self, qubits, bases):
+    def apply_measurement(self, qubits, bases):
         """
         Mede os qubits a partir das bases já definidas.
 
@@ -85,7 +85,7 @@ class BB84(Protocol):
         received_qubits, interference_qubits = self.network.send_qubits(route, qubits)
         
         # Bob mede os qubits
-        measured_qubits = self.aplly_measurement(received_qubits, bases_bob)
+        measured_qubits = self.apply_measurement(received_qubits, bases_bob)
         
         # Comparando as bases de Alice e Bob
         matching_bases = super().compare_bases(bases_alice, bases_bob)

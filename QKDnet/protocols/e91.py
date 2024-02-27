@@ -34,7 +34,7 @@ class E91(Protocol):
             
         return pairs
     
-    def aplly_measurement(self, qubits, bases):
+    def apply_measurement(self, qubits, bases):
         """
         Mede os qubits a partir das bases já definidas.
 
@@ -62,9 +62,6 @@ class E91(Protocol):
         Args:
             # network (Network): Rede em que o protocolo será executado.
             route (lista): Rota de Alice para Bob.
-
-        Returns:
-            Dict : Dicionário de dicionários com as informações das execuções.
         """
         # Número de qubits para geração da chave
         nqubits = super().network.nqubits
@@ -83,7 +80,7 @@ class E91(Protocol):
         received_qubits, interference_qubits = super().network.send_eprs(route, pairs)
         
         # Bob medindo os qubits
-        measured_qubits = self.aplly_measurement(received_qubits, bases_bob)
+        measured_qubits = self.apply_measurement(received_qubits, bases_bob)
         
         # Comparando as bases de Alice e Bob
         matching_bases = self.compare_bases(bases_alice, bases_bob)

@@ -116,7 +116,7 @@ class Protocol(ABC):
         pass
     
     @abstractmethod
-    def aplly_measurement(self):
+    def apply_measurement(self):
         pass
     
     @abstractmethod
