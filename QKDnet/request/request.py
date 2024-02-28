@@ -5,12 +5,14 @@ class Request:
     
     def __init__(self, classe, app, priority, alice, bob):
         self.classe = classe
+        self.set_keys()
         self.app = app
         self.priority = priority
-        self.set_keys()
         self.alice = alice
         self.bob = bob
         self.route = []
+        self.time = None
+        self.max_time = None
         
     def __str__(self) -> str:
         return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys})"
@@ -29,6 +31,21 @@ class Request:
             self.keys = 1000
         elif self.classe == "Class E":
             self.keys = 1500
+    
+    def set_time(self):
+        """
+        Define o tempo para ser atendido (em time slot).
+        """
+        # Cálculo deve ser feito pelo Controlador
+        # É necessário esse método? E a propriedade?
+        pass
+    
+    def set_max_time(self):
+        """
+        Define o tempo máximo (em time slot) para o request ser atendido.
+        """
+        # Precisa de um polimorfismo aqui. Talvez role um de sobrecarga.
+        pass
     
     def update_keys(self, keys):
         """
