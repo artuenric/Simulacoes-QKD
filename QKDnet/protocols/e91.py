@@ -5,9 +5,8 @@ class E91(Protocol):
     """ 
     Protocolo QKD E91.
     """
-    def __init__(self, network):
+    def __init__(self):
         super().__init__()
-        super().network = network
         super().app = "E91"
         
     def prepare_qubits(self, key, bases):
@@ -55,16 +54,16 @@ class E91(Protocol):
         return results
     
     
-    def run(self, route):
+    def run(self, network, route):
         """
         Executa o protocolo QKD E91.
 
         Args:
-            # network (Network): Rede em que o protocolo será executado.
+            network (Network): Rede em que o protocolo será executado.
             route (lista): Rota de Alice para Bob.
         """
         # Número de qubits para geração da chave
-        nqubits = super().network.nqubits
+        nqubits = network.nqubits
         
         # Informações para Alice
         key_alice = super().create_key(nqubits)
@@ -77,7 +76,7 @@ class E91(Protocol):
         bases_bob = super().generate_bases(nqubits)
         
         # Enviando os qubits
-        received_qubits, interference_qubits = super().network.send_eprs(route, pairs)
+        received_qubits, interference_qubits = network.send_eprs(route, pairs)
         
         # Bob medindo os qubits
         measured_qubits = self.apply_measurement(received_qubits, bases_bob)

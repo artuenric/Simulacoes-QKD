@@ -83,8 +83,10 @@ class Network():
         
         # Initialize channels
         channels = {(u, v): {
+            # Capacidade do canal
+            "capacity": random.randint(1, 3),
             # EPRs
-            "epr_available": random.randint(1, 2),   
+            "epr_available": random.randint(1, 2), 
             # fidelity 
             "fidelity_value": self.fidelity,
         } for u, v in G.edges}

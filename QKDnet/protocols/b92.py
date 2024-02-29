@@ -2,9 +2,8 @@ from .protocol import Protocol
 from ..quantum import Qubit
 
 class B92(Protocol):
-    def __init__(self, network):
+    def __init__(self):
         super().__init__()
-        self.network = network
         self.app = "B92"
     
     def prepare_qubits(self, key):
@@ -62,7 +61,7 @@ class B92(Protocol):
             
         return results
         
-    def run(self, route):
+    def run(self, network, route):
         """
         Executa o protocolo QKD B92.
 
@@ -71,7 +70,7 @@ class B92(Protocol):
             
         """
         # Número de qubits para geração da chave
-        nqubits = self.network.nqubits
+        nqubits = network.nqubits
         
         # Informações para Alice
         key_alice = super().create_key(nqubits)
@@ -83,13 +82,13 @@ class B92(Protocol):
         bases_bob = super().generate_bases(nqubits)
         
         # Enviando os qubits
-        bob_received_qubits, interference_qubits = self.network.send_qubits(route, qubits)
+        bob_received_qubits, interference_qubits = network.send_qubits(route, qubits)
         
         # Bob mede os qubits
         key_bob = self.apply_measurement(bob_received_qubits, bases_bob)
         
         # Qubits sem interferência
-        shared_key = super.check_key(key_bob, key_alice)
+        shared_key = super().check_key(key_bob, key_alice)
         
         # Resultados da execução
         self.generated_key = key_alice

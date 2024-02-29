@@ -130,7 +130,7 @@ def generate_qkd_requests(rede, num_requests, apps, case):
         elif case == 9:
             class_distribution = [0, 0, 0, 0, 1]
         else:
-            raise ValueError("Invalid case parameter")
+            raise ValueError("Invalid case parameter")
         
         # Distribuição de apps
         apps_distribution = [0.33, 0.33, 0.33]

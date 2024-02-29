@@ -1,3 +1,6 @@
+# App pode ser o próprio protocolo, ao invés de só uma string
+from ..protocols import *
+
 class Request:
     """
     Um objeto para ser usado como requisição de chave quântica.
@@ -5,8 +8,11 @@ class Request:
     
     def __init__(self, classe, app, priority, alice, bob):
         self.classe = classe
-        self.set_keys()
+        self.keys_need
+        self.set_keys_need()
         self.app = app
+        self.protocol
+        self.set_protocol(app)
         self.priority = priority
         self.alice = alice
         self.bob = bob
@@ -15,22 +21,37 @@ class Request:
         self.max_time = None
         
     def __str__(self) -> str:
-        return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys})"
+        return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys_need})"
     
-    def set_keys(self):
+    def set_protocol(self, app):
+        """
+        Define o protocolo em uso de acordo com a app.
+
+        Args:
+            app (string): Nome da app (BB84, E91 ou B92)
+        """
+
+        if app == "BB84":
+            self.protocol = BB84()
+        elif app == "E91":
+            self.protocol = E91()
+        elif app == "B92":
+            self.protocol = B92()
+    
+    def set_keys_need(self):
         """
         Define o número de chaves que a requisição precisa.
         """
         if self.classe == "Class A":
-            self.keys = 100
+            self.keys_need = 100
         elif self.classe == "Class B":
-            self.keys = 250
+            self.keys_need = 250
         elif self.classe == "Class C":
-            self.keys = 500
+            self.keys_need = 500
         elif self.classe == "Class D":
-            self.keys = 1000
+            self.keys_need = 1000
         elif self.classe == "Class E":
-            self.keys = 1500
+            self.keys_need = 1500
     
     def set_time(self):
         """
@@ -53,5 +74,8 @@ class Request:
         Args:
             keys (int): Tamanho da chave obtida durante a execução do protocolo.
         """
-        self.keys -= keys
+        self.keys_need -= keys
+        
+        # Subtrai do valor de chaves necessárias o número obtido da última execução do protocolo.
+        # *self.keys_need -= self.protocol.shared_key
         

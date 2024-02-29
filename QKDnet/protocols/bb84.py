@@ -5,9 +5,8 @@ class BB84(Protocol):
     """
     Protocolo QKD BB84.
     """
-    def __init__(self, network):
+    def __init__(self):
         super().__init__()
-        self.network = network
         self.app = "BB84"
     
     def prepare_qubits(self, key, bases):
@@ -53,22 +52,18 @@ class BB84(Protocol):
         
         return results
     
-    def run(self, route):
+    def run(self, network, route):
         """
         Executa o protocolo QKD BB84.
 
         Args:
             network (Network): Rede em que o protocolo será executado.
-            controller (Controller): Controlador da rede.
-            alice (networkx node): Nó remetente das chaves.
-            bob (networkx node): Nó destinatário das chaves.
-            num_keys (int, optional): Número de chaves geradas. Defaults to 100.
 
         Returns:
             Dict : Dicionário de dicionários com as informações das execuções.
         """
         # Número de qubits para geração da chave
-        nqubits = self.network.nqubits
+        nqubits = network.nqubits
         
         # Informações para Alice
         key_alice = super().create_key(nqubits)
@@ -82,7 +77,7 @@ class BB84(Protocol):
         bases_bob = super().generate_bases(nqubits)
         
         # Enviando os qubits
-        received_qubits, interference_qubits = self.network.send_qubits(route, qubits)
+        received_qubits, interference_qubits = network.send_qubits(route, qubits)
         
         # Bob mede os qubits
         measured_qubits = self.apply_measurement(received_qubits, bases_bob)

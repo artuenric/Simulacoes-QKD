@@ -11,9 +11,6 @@ class Protocol(ABC):
     """
     def __init__(self) -> None:
         self.app = None
-        # self.alice = None Não sei se vão ser necessários aqui.
-        # self.bob = None Não sei se vão ser necessários aqui.
-        self.network = None
         self.generated_key = None
         self.shared_key = None
         self.different_bits = None
