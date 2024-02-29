@@ -1,5 +1,6 @@
 import networkx as nx
-from components.protocols import *
+from protocols import *
+from finder import *
 from itertools import islice
 
 class Controller():
@@ -8,6 +9,18 @@ class Controller():
     """
     def __init__(self, network) -> None:
         self.network = network
+        self.pathFinder = None
+    
+    def set_paths_calculation(self, routes_calculation_type):
+        # Calcula as rotas de menor custo
+        if routes_calculation_type == 'shortest':
+            self.pathFinder = ShortestPaths()
+        elif routes_calculation_type == 'kshortest': 
+            self.pathFinder = KShortestPaths()
+        elif routes_calculation_type == 'all':
+            self.pathFinder = AllPaths()
+        elif routes_calculation_type == 'klength':
+            self.pathFinder = KLengthPaths()
     
     def set_network(self, network):
         """
@@ -55,36 +68,6 @@ class Controller():
             route (list): Lista com k listas de nós que compõem a rota
         """
         return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None),k ))
-    
-    
-    def dfs_paths(self, source, target, length, path=None):
-        """
-        Realiza uma busca em profundidade (DFS) em busca de caminhos de um comprimento específico entre dois nós.
-
-        Args:
-            source (node): Nó de origem.
-            target (node): Nó de destino.
-            length (int): Comprimento desejado do caminho.
-            path (list, optional): Caminho parcial atual. Defaults to None.
-
-        Yields:
-            list: Lista de nós que compõem um caminho de comprimento específico entre source e target.
-        """
-        G = self.network.G
-         # Inicializa o caminho se não estiver definido
-        if path is None:
-            path = [source]
-        # Verifica se o comprimento do caminho atingiu o objetivo
-        if len(path) == length:
-            if path[-1] == target:
-                yield path
-            return
-        # Explora os vizinhos do nó de origem
-        for neighbor in G.neighbors(source):
-            # Garante que o vizinho não esteja no caminho atual
-            if neighbor not in path:
-                # Recursivamente busca caminhos a partir do vizinho
-                yield from self.dfs_paths(neighbor, target, length, path + [neighbor])
 
     def calculate_routes_of_k_length(self, source, target, length):
         """
@@ -136,12 +119,17 @@ class Controller():
                 # Executa a aplicação QKD
                 # key_size = request.key_size
                 # key_size = 100
+                
+                # *request.protocol.run(network, route)
+                # *request.update_keys()
+                
                 if request.app == 'B92':
                     exec_data = run_qkd_b92(self.network, request.route)
                 elif request.app == 'BB84':
                     exec_data = run_qkd_bb84(self.network, request.route)
                 elif request.app == 'E91':
                     exec_data = run_qkd_e91(self.network, request.route)
+                    
                 # Atualizando a chave obtida pelo request
                 request.update_keys(len(exec_data['shared key']))
                 # Atualiza a lista de requisições
@@ -233,3 +221,5 @@ class Controller():
                         break
         
         return info
+    
+    # def allocate_requests
