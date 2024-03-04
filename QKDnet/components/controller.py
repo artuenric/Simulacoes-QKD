@@ -10,17 +10,27 @@ class Controller():
     def __init__(self, network) -> None:
         self.network = network
         self.pathFinder = None
+        self.set_paths_calculation('shortest')
+        self.received_requests = []
+        self.requests = []
+        self.current_requests = []
     
     def set_paths_calculation(self, routes_calculation_type):
+        """
+        Define o tipo de cálculo de rotas que o controlador utilizará.
+
+        Args:
+            routes_calculation_type (str): shortest, kshortest, all, klength.
+        """
         # Calcula as rotas de menor custo
         if routes_calculation_type == 'shortest':
-            self.pathFinder = ShortestPaths()
+            self.pathFinder = ShortestPaths(self.network)
         elif routes_calculation_type == 'kshortest': 
-            self.pathFinder = KShortestPaths()
+            self.pathFinder = KShortestPaths(self.network)
         elif routes_calculation_type == 'all':
-            self.pathFinder = AllPaths()
+            self.pathFinder = AllPaths(self.network)
         elif routes_calculation_type == 'klength':
-            self.pathFinder = KLengthPaths()
+            self.pathFinder = KLengthPaths(self.network)
     
     def set_network(self, network):
         """
@@ -31,6 +41,24 @@ class Controller():
         """
         self.network = network
         network.set_controller(self)
+    
+    def add_received_requests(self, requests):
+        """
+        Define as requisições recebidas pelo controlador.
+        
+        Args:
+            requests (list): Lista de requisições.
+        """
+        self.received_requests.append(requests)
+    
+    def add_current_requests(self, requests):
+        """
+        Define as requisições atuais do controlador.
+        
+        Args:
+            requests (list): Lista de requisições.
+        """
+        self.current_requests.append(requests)
     
     def calculate_shortest_route(self, alice, bob):
         """
@@ -47,179 +75,99 @@ class Controller():
         
         return route
     
-    def calculate_all_routes(self, alice, bob):
+    def allocate(self):
         """
-        Procura as rotas de menor custo.
-        Args:
-            alice, bob (node): Nós do grafo da rede.
-
-        Returns:
-            route (list): Lista com listas de nós que compõem a rota.
-        """
-        return sorted(list(nx.all_simple_paths(self.network.G, alice, bob)), key=len)
-    
-    def calculate_k_shortest_routes(self, alice, bob, k=5):
-        """
-        Procura k rotas de menor custo. Para o caso de redes do tipo malha, é mais efetivo que `calculate_shortest_routes()`, já que esta retorna apenas as rotas do canal direto alice-bob.
-        Args:
-            alice, bob (node): Nós do grafo da rede.
-
-        Returns:
-            route (list): Lista com k listas de nós que compõem a rota
-        """
-        return list(islice(nx.shortest_simple_paths(self.network.G, alice, bob, weight=None),k ))
-
-    def calculate_routes_of_k_length(self, source, target, length):
-        """
-        Encontra todos os caminhos de um comprimento específico entre dois nós.
-
-        Args:
-            source (node): Nó de origem.
-            target (node): Nó de destino.
-            length (int): Comprimento desejado do caminho.
-
-        Returns:
-            list: Lista de caminhos entre source e target com o comprimento especificado.
-        """
-         # Chama a função de busca em profundidade com comprimento + 1 porque length inclui o nó de origem
-        return list(self.dfs_paths(source, target, length + 1))
-
-    def calculate_shortest_routes(self, alice, bob):
-        """
-        Procura a rota de menor custo.
-        Args:
-            alice, bob (node): Nós do grafo da rede.
-
-        Returns:
-            route (list): Lista de nós que compõem a rota.
-        """
-        return list(nx.all_shortest_paths(self.network.G, alice, bob))
-    
-    def send_requests(self, request_list, routes_calculation_type):
-        """
-        Envia as requisições para a rede que as executa a partir da lista.
+        Aloca as rotas de acordo com o tempo de atendimento para os pedidos e atualiza a lista de requisições.
         
         Args:
-            request_list (list): Lista de requisições -> [alice, bob, app].
+            requests (list): Lista de requests.
         """
 
-        # Índice da execução
-        exec_index = 1
-        results = dict()
-        
-        # Enquanto houver requisições na lista de requisições
-        while len(request_list) > 0:
-            #LOG
-            # print(f'{exec_index}ª EXECUÇÃO:')
-            # print("Requisições: ", list(r.__str__() for r in request_list))
-            # Alocando as rotas para os pedidos possíveis de serem atendidos, ou seja, que não compartilham links
-            requests_info = self.allocate_routes(request_list, routes_calculation_type)
-            
-            for request in requests_info:
-                # Executa a aplicação QKD
-                # key_size = request.key_size
-                # key_size = 100
-                
-                # *request.protocol.run(network, route)
-                # *request.update_keys()
-                
-                if request.app == 'B92':
-                    exec_data = run_qkd_b92(self.network, request.route)
-                elif request.app == 'BB84':
-                    exec_data = run_qkd_bb84(self.network, request.route)
-                elif request.app == 'E91':
-                    exec_data = run_qkd_e91(self.network, request.route)
-                    
-                # Atualizando a chave obtida pelo request
-                request.update_keys(len(exec_data['shared key']))
-                # Atualiza a lista de requisições
-                if request.keys <= 0:
-                    request_list.remove(request)
-            
-            # Coletando dados
-            results[exec_index] = exec_data
-            
-            exec_index += 1
-        
-        return results
-    
-    # Método antigo, entrará em desuso
-    def allocate_routes(self, request_list, routes_calculation_type):
-        """
-        Aloca as rotas para os pedidos e atualiza a lista de requisições.
-        
-        Args:
-            request_list (list): Lista de requisições -> [alice, bob, app].
-            routes_calculation_type (str): shortest, kshortest, all, klength.
-            
-        Returns:
-            info (list): Lista de dicionários -> [{'Priority': priority, 'Route': route, 'App': app}].
-        """
-
-        # Informações das requisições
-        info = []
-        # Todos os links já utilizados
+         # Todos os links já utilizados
         all_used_links = set()
         # Links utilizados apenas por BB84 e B92
         bb84_b92_used_links = set()
         # Contador de rotas E91 (para que não haja muitos E91 com links compartilhados)
         e91_count = 0
-        # Ordenando as requisições por prioridade
-        sorted_request_list = sorted(request_list, key=lambda x: x.priority , reverse=True)
-        # Log
-        # print("Requests ordenados por prioridade: ", list(r.__str__() for r in sorted_request_list))
         
-        for request in sorted_request_list:
-            # Calcula as rotas de menor custo
-            if routes_calculation_type == 'shortest':
-                routes = self.calculate_shortest_route(request.alice, request.bob)
-            elif routes_calculation_type == 'kshortest': 
-                routes = self.calculate_k_shortest_routes(request.alice, request.bob)
-            elif routes_calculation_type == 'all':
-                routes = self.calculate_all_routes(request.alice, request.bob)
-            elif routes_calculation_type == 'klength':
-                routes = self.calculate_routes_of_k_length(request.alice, request.bob, 5)
+        for r in self.requests:
+            # Calcula as rotas de menor custo para a request
+            routes = self.pathFinder.get_paths(r.alice, r.bob)
             
-            # Log
-            # print(f'Rotas: {routes}')
             # Itera sobre as rotas
             for route in routes:
-                #print(f'Rota Avaliada: {route}')
                 # Lista de pares de elementos adjacentes da lista route (canais)
                 route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
-                # Log
-                # print("Rota atual trabalhada: ", route)
                 # Checa se nenhum link dessa rota já foi usado em uma rota anterior
+                
+                # ISSO AQUI TEM QUE MUDAR DE ACORDO COM A CAPACIDADE DE CADA LINK
                 if not any(link in all_used_links for link in route_links):
-                        # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
-                        if request.app == 'BB84' or request.app == 'B92':
-                            bb84_b92_used_links.update(route_links)
-                        
-                        # Adicionando as informações de rota, app e prioridade
-                        request.route = route
-                        info.append(request)
-                        
-                        # Adiciona os links usados no conjunto de links usados
-                        all_used_links.update(route_links)
- 
-                        break
-                    
-                elif request.app == 'E91':
+                    # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
+                    if r.app == 'BB84' or r.app == 'B92':
+                        bb84_b92_used_links.update(route_links)
+                    # Adicionando as informações de rota, app e prioridade
+                    r.route = route
+                    self.current_requests.append(r)
+                    # Adiciona os links usados no conjunto de links usados
+                    all_used_links.update(route_links)
+                    break
+                elif r.app == 'E91':
                     # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
                     if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
                         # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
                         if e91_count < self.network.neprs:
                             # Adicionando as informações de rota, app e prioridade
-                            request.route = route
-                            info.append(request)
-                            
+                            r.route = route
+                            self.current_requests.append(r)
                             # Adicionando o link ao conjunto de links usados
                             all_used_links.update(route_links)
-
                             e91_count += 1
-                        
                         break
-        
-        return info
+            
     
-    # def allocate_requests
+    def send_requests(self, requests):
+        """
+        Envia as requisições para a rede que as executa a partir da lista.
+        
+        Args:
+            requests (list): Lista de requisições.
+        """
+        # Adiciona na "memória" do controlador uma cópia das requisições recebidas
+        self.requests = requests.copy()
+        # Estima o tempo para atendimento dos requests
+        self.estimate_time(self.requests)
+        # Ordena as requisições por tempo estimado
+        self.requests = sorted(self.requests, key=lambda r: r.time_left) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe
+        
+        # Enquanto houver requisições na lista de requisições
+        while len(self.requests) > 0: # fnal do laço remover as requests de current_requests
+            
+            # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
+            self.allocate_routes(self.requests)
+            
+            for request in self.current_requests:
+                # Executa a aplicação QKD
+                request.protocol.run(self.network, request.route)
+                # Atualiza o númerp de chaves obtidas
+                request.update_keys(len(request.protocol.shared_key))
+                # Atualiza a lista de requisições
+                if request.keys_need <= 0:
+                    self.current_requests.remove(request)
+            
+            # Coletando dados
+            # CRIAR FORMA LEGAL DE COLETAR DADOS
+            self.time += 1
+   
+    def estimate_time(self, requests):
+        """
+        Estima o tempo de atendimento para as requisições.
+
+        Args:
+            requests (list): Lista de requisições.
+        """
+
+        for request in requests:
+            # Calcula o tempo estimado de atendimento
+            estimated_time = 1 + ((request.keys_need)/self.network.nqubits) * request.protocol.sucess_rate
+            # Atualiza o tempo estimado de atendimento
+            request.set_time_left(estimated_time)

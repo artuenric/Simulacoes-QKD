@@ -19,6 +19,7 @@ class Request:
         self.route = []
         self.time_left = None
         self.max_time = None
+        self.finished = False
         
     def __str__(self) -> str:
         return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys_need})"
