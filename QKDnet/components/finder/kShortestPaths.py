@@ -2,10 +2,11 @@ from .pathFinder import *
 from itertools import islice
 
 class KShortestPaths(PathFinder):
-    def __init__(self) -> None:
+    def __init__(self, network) -> None:
         super().__init__()
         self.name = "K shortest paths"
-    
+        self.network = network
+        
     def get_paths(self, alice, bob, k=5):
         """
         Procura k rotas de menor custo. Para o caso de redes do tipo malha, é mais efetivo que `calculate_shortest_routes()`, já que esta retorna apenas as rotas do canal direto alice-bob.

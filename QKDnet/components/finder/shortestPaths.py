@@ -1,10 +1,11 @@
 from .pathFinder import *
 
 class ShortestPaths(PathFinder):
-    def __init__(self, name) -> None:
+    def __init__(self, network) -> None:
         super().__init__()
         self.name = "Shortest paths"
-    
+        self.network = network
+        
     def get_paths(self, alice, bob):
         """
         Procura as rotas de menores custos.

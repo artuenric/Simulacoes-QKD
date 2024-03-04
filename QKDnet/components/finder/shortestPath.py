@@ -1,9 +1,10 @@
 from .pathFinder import *
 
 class ShortestPath(PathFinder):
-    def __init__(self) -> None:
+    def __init__(self, network) -> None:
         super().__init__()
         self.name = "Shortest path"
+        self.network = network
         
     def get_paths(self, alice, bob):
         """

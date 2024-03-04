@@ -1,10 +1,11 @@
 from .pathFinder import *
 
 class KLengthPaths(PathFinder):
-    def __init__(self) -> None:
+    def __init__(self, network) -> None:
         super().__init__()
         self.name = "Paths of K length"
-    
+        self.network = network
+        
     def dfs_paths(self, source, target, length, path=None):
         """
         Realiza uma busca em profundidade (DFS) em busca de caminhos de um comprimento específico entre dois nós.
