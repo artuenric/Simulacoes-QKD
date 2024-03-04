@@ -5,6 +5,7 @@ class B92(Protocol):
     def __init__(self):
         super().__init__()
         self.app = "B92"
+        self.sucess_rate = 0.25
     
     def prepare_qubits(self, key):
         """

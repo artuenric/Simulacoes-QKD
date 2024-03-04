@@ -17,7 +17,7 @@ class Request:
         self.alice = alice
         self.bob = bob
         self.route = []
-        self.time = None
+        self.time_left = None
         self.max_time = None
         
     def __str__(self) -> str:
@@ -53,13 +53,11 @@ class Request:
         elif self.classe == "Class E":
             self.keys_need = 1500
     
-    def set_time(self):
+    def set_time_left(self, time_left):
         """
         Define o tempo para ser atendido (em time slot).
         """
-        # Cálculo deve ser feito pelo Controlador
-        # É necessário esse método? E a propriedade?
-        pass
+        self.time_left = time_left
     
     def set_max_time(self):
         """

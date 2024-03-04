@@ -8,6 +8,8 @@ class BB84(Protocol):
     def __init__(self):
         super().__init__()
         self.app = "BB84"
+        self.sucess_rate = 0.5
+
     
     def prepare_qubits(self, key, bases):
         """
