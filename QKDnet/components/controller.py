@@ -1,7 +1,6 @@
 import networkx as nx
-from protocols import *
-from finder import *
-from itertools import islice
+from ..protocols import *
+from .finder import *
 
 class Controller():
     """
@@ -83,12 +82,8 @@ class Controller():
             requests (list): Lista de requests.
         """
 
-         # Todos os links já utilizados
-        all_used_links = set()
-        # Links utilizados apenas por BB84 e B92
-        bb84_b92_used_links = set()
-        # Contador de rotas E91 (para que não haja muitos E91 com links compartilhados)
-        e91_count = 0
+        # Links ocupados
+        busy_links = set()
         
         for r in self.requests:
             # Calcula as rotas de menor custo para a request
@@ -98,31 +93,14 @@ class Controller():
             for route in routes:
                 # Lista de pares de elementos adjacentes da lista route (canais)
                 route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
-                # Checa se nenhum link dessa rota já foi usado em uma rota anterior
                 
-                # ISSO AQUI TEM QUE MUDAR DE ACORDO COM A CAPACIDADE DE CADA LINK
-                if not any(link in all_used_links for link in route_links):
-                    # Se a app for BB84 ou B92, adiciona os links usados no conjunto de links usados apenas por essas apps
-                    if r.app == 'BB84' or r.app == 'B92':
-                        bb84_b92_used_links.update(route_links)
-                    # Adicionando as informações de rota, app e prioridade
+                # Se todos os links da rota tem capacidade maior que a carga atual, aloca a rota
+                if not any(self.network.channels[(link[0], link[1])]["capacity"] > self.network.channels[(link[0], link[1])]["load"] for link in route_links):
                     r.route = route
                     self.current_requests.append(r)
-                    # Adiciona os links usados no conjunto de links usados
-                    all_used_links.update(route_links)
+                    self.network.add_load(route)
+                    
                     break
-                elif r.app == 'E91':
-                    # Se nenhum dos links desta rota está nos links utilizados pelos outros tipos de protocolo, os links que estão sendo utilizados são dos outros E91
-                    if not any(e91_link in bb84_b92_used_links for e91_link in route_links):
-                        # Para que não haja tantos E91 com links compartilhados, só 3 rotas E91 que compartilham links serão alocadas no máximo
-                        if e91_count < self.network.neprs:
-                            # Adicionando as informações de rota, app e prioridade
-                            r.route = route
-                            self.current_requests.append(r)
-                            # Adicionando o link ao conjunto de links usados
-                            all_used_links.update(route_links)
-                            e91_count += 1
-                        break
             
     
     def send_requests(self, requests):
@@ -150,13 +128,19 @@ class Controller():
                 request.protocol.run(self.network, request.route)
                 # Atualiza o númerp de chaves obtidas
                 request.update_keys(len(request.protocol.shared_key))
-                # Atualiza a lista de requisições
+                
                 if request.keys_need <= 0:
                     self.current_requests.remove(request)
+                    request.served = True
+                    
+                
+                elif request.time == request.max_time:
+                    self.current_requests.remove(request)
+                    request.served = False
+                    self.requests.remove(request)
             
-            # Coletando dados
-            # CRIAR FORMA LEGAL DE COLETAR DADOS
-            self.time += 1
+            # Atualiza o tempo de atendimento
+            self.update_time()
    
     def estimate_time(self, requests):
         """
@@ -171,3 +155,11 @@ class Controller():
             estimated_time = 1 + ((request.keys_need)/self.network.nqubits) * request.protocol.sucess_rate
             # Atualiza o tempo estimado de atendimento
             request.set_time_left(estimated_time)
+    
+    def update_time(self):
+        """
+        Atualiza o tempo de atendimento para as requisições e do controlador.
+        """
+        self.time += 1
+        for request in self.requests:
+            request.time += 1
