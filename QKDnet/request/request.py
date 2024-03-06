@@ -17,9 +17,10 @@ class Request:
         self.alice = alice
         self.bob = bob
         self.route = []
-        self.time_left = None
+        self.time = None
         self.max_time = None
-        self.finished = False
+        self.served = False
+        
         
     def __str__(self) -> str:
         return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys_need})"
@@ -53,12 +54,6 @@ class Request:
             self.keys_need = 1000
         elif self.classe == "Class E":
             self.keys_need = 1500
-    
-    def set_time_left(self, time_left):
-        """
-        Define o tempo para ser atendido (em time slot).
-        """
-        self.time_left = time_left
     
     def set_max_time(self):
         """
