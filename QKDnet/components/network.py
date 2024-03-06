@@ -73,7 +73,18 @@ class Network():
         Define o número de EPRs.
         """
         self.neprs = neprs
+    
+    def add_load(self, rota):
+        """
+        Add carga dos canais.
         
+        Args:  
+            alice, bob (int): Nós da rede.
+            load (int): Carga a ser adicionada ao canal.
+        """
+        for link in rota:
+            self.channels[(link[0], link[1])]["load"] += 1
+    
     def assign_to_net(self, G):
         """
         Atribui as propriedades dos nós e canais à rede.
@@ -83,15 +94,21 @@ class Network():
         
         # Initialize channels
         channels = {(u, v): {
+            # Carga do canal
+            "load": 0,
             # Capacidade do canal
             "capacity": random.randint(1, 3),
             # EPRs
-            "epr_available": random.randint(1, 2), 
+            "epr_available": random.randint(1, 2),
             # fidelity 
             "fidelity_value": self.fidelity,
         } for u, v in G.edges}
 
         channels.update({(v, u): {
+            # Carga do canal
+            "load": 0,
+            # Capacidade do canal
+            "capacity": random.randint(1, 3),
             # EPRs
             "epr_available": random.randint(1, 2),
             # Fidelity 
