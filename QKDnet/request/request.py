@@ -6,8 +6,8 @@ class Request:
     Um objeto para ser usado como requisição de chave quântica.
     """
     
-    def __init__(self, cod, classe, app, priority, alice, bob):
-        self.cod = cod
+    def __init__(self, num_id, classe, app, priority, alice, bob):
+        self.num_id = num_id
         self.classe = classe
         self.min_fidelity = None
         self.keys_need = None
@@ -70,6 +70,18 @@ class Request:
         """
         # Precisa de um polimorfismo aqui. Talvez role um de sobrecarga.
         pass
+    
+    def get_info(self):
+        """
+        Retorna informações sobre a requisição.
+        """
+        return {
+            "Num ID": self.num_id,
+            "Priority": self.priority,
+            "Keys Need": self.keys_need,
+            "Alice e Bob": f"{self.alice}-{self.bob}",
+            "App": self.app
+        }
     
     def update_keys(self, keys):
         """

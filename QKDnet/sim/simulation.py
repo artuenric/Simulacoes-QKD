@@ -58,7 +58,7 @@ class Simulation:
             app = random.choices(self.apps, self.apps_distribution)[0]
             priority = random.randint(1, 5)
             alice, bob = self.network.random_alice_bob()
-            r = Request(classe, app, priority, alice, bob)
+            r = Request(i, classe, app, priority, alice, bob)
             requests.append(r)
             
         return requests

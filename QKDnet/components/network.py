@@ -74,6 +74,25 @@ class Network():
         """
         self.neprs = neprs
     
+    def remove_load(self, rota):
+        """
+        Remove a carga dos canais.
+
+        Args:
+            rota (list): Lista com os nós que compõem a rota: [1, 2, 3, 4...]
+        """
+        # Se a rota tiver menos de dois nós, não há links para percorrer
+        if len(rota) < 2:
+            return
+        
+        # Iterar sobre os pares de nós consecutivos na rota
+        for link in zip(rota[:-1], rota[1:]):
+            # Obtém os nós que formam o link
+            node_from, node_to = link
+            
+            # Atualiza a carga do canal correspondente
+            self.channels[(node_from, node_to)]["load"] -= 1
+        
     def add_load(self, rota):
         """
         Add carga dos canais.
