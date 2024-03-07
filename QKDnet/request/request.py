@@ -22,6 +22,7 @@ class Request:
         self.esttimeted_time = None
         self.current_time = 0
         self.max_time = None
+        self.set_max_time()
         self.served = False
         
         
@@ -68,7 +69,7 @@ class Request:
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
-        # Precisa de um polimorfismo aqui. Talvez role um de sobrecarga.
+        self.max_time = 0 # (self.keys_need * self.protocol.sucess_rate) + 5
         pass
     
     def get_info(self):
@@ -77,10 +78,10 @@ class Request:
         """
         return {
             "Num ID": self.num_id,
+            "App": self.app,
             "Priority": self.priority,
             "Keys Need": self.keys_need,
             "Alice e Bob": f"{self.alice}-{self.bob}",
-            "App": self.app
         }
     
     def update_keys(self, keys):

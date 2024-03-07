@@ -82,7 +82,7 @@ class Controller():
         
         return route
     
-    def allocate(self, requests):
+    def allocate(self):
         """
         Aloca as rotas de acordo com o tempo de atendimento para os pedidos e atualiza a lista de requisições.
         
@@ -98,22 +98,29 @@ class Controller():
             # Calcula as rotas de menor custo para a request
             routes = self.pathFinder.get_paths(r.alice, r.bob)
             
+            log.info(f"Request: {r.num_id} - Rotas: {routes}")
+            
             # Itera sobre as rotas
             for route in routes:
                 # Lista de pares de elementos adjacentes da lista route (canais)
                 route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
                 
-                log.info(f"Capacidade da rota {route}: {list(self.network.channels[(link[0], link[1])]['capacity'] for link in route_links)}")
+                log.info(f"Capacidade da rota {route}: {list(self.network.channels[(link[0], link[1])]['capacity'] for link in route_links)}.")
+                log.info(f"Load da rota {route}: {list(self.network.channels[(link[0], link[1])]['load'] for link in route_links)}.")
                 
                 # Se todos os links da rota tem capacidade maior que a carga atual, aloca a rota
                 if all(self.network.channels[(link[0], link[1])]["capacity"] > self.network.channels[(link[0], link[1])]["load"] for link in route_links):
-                    log.info(f"Rota {route} alocada para a requisição {r.num_id}.")
                     r.route = route
-                    log.info(f"Adicionando request {r.num_id} na lista de requests atuais.")
+                    log.info(f"Request: {r.num_id} - Rota {route}.")
+                    
                     current_requests.append(r)
-                    log.info(f"Load da rota: {list(self.network.channels[(link[0], link[1])]["load"] for link in route_links)}")
+                    log.info(f"Request: {r.num_id} - Adicionado requests na lista de requests atuais.")
+                    
                     self.network.add_load(route)
+                    log.info(f"Add Load na rota: {list(self.network.channels[(link[0], link[1])]["load"] for link in route_links)}")
                     break
+        
+        log.info(f"Requests escolhidas para alocação: {list(request.num_id for request in current_requests)}")
         
         return current_requests
             
@@ -126,47 +133,54 @@ class Controller():
             requests (list): Lista de requisições.
         """
         
-        log.debug(f"Requisições recebidas: {list(request.get_info() for request in requests)}")
+        log.info(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
         
         # Adiciona na "memória" do controlador uma cópia das requisições recebidas
         self.requests = requests.copy()
         # Estima o tempo para atendimento dos requests
         self.estimate_time(self.requests)
         # Ordena as requisições por tempo estimado
-        received_requests = sorted(self.requests, key=lambda r: r.estimated_time) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe    
+        self.requests = sorted(self.requests, key=lambda r: r.estimated_time) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe    
+        
+        log.info(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
         
         # Enquanto houver requisições na lista de requisições
         while len(self.requests) > 0: # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
-            current_requests = self.allocate(received_requests)
+            current_requests = self.allocate()
             
-            print("Requests sendo atendidas: ", list(request.num_id for request in current_requests))
+            log.info(f"Requests sendo atendidas: {list(request.num_id for request in current_requests)}")
             
             for request in current_requests:
-                print(f"Request {request.num_id} sendo atendida.")
+                log.info(f"Request: {request.num_id} - Executando.")
+                
                 # Executa a aplicação QKD
                 request.protocol.run(self.network, request.route)
                 # Atualiza o númerp de chaves obtidas
                 request.update_keys(len(request.protocol.shared_key))
-                print("Chaves Necessárias para finalizar a App:", request.keys_need)
-                print("Chaves Obtidas:", len(request.protocol.shared_key))
+                
+                log.info(f"Request: {request.num_id} - Chaves Obtidas: {len(request.protocol.shared_key)}")
+                log.info(f"Request: {request.num_id} - Chaves necessárias: {request.keys_need}")
                 
                 if request.keys_need <= 0:
-                    print(f"Removendo request {request.num_id} da lista de requests.")
-                    print(f"Requests: {list(request.num_id for request in self.requests)}")
-                    self.requests.remove(request)
-                    print("R E M O V I a request da lista de requests.", list(request.num_id for request in self.requests))
+                    log.info(f"Request: {request.num_id} - Atendida com sucesso.")
+                    
                     request.served = True
-                
+                    self.requests.remove(request)
+                    
+                    log.info(f"Request: {request.num_id} - Removida da lista de requests.")
+                    
                 elif request.current_time == request.max_time:
-                    print("Request NÃO atendida.")
-                    self.current_requests.remove(request)
+                    log.info(f"Request: {request.num_id} - Expirou!")
                     request.served = False
-            
+                    self.requests.remove(request)
+                    
+                # "Limpa" a rota da requisição    
                 self.network.remove_load(request.route)
-            #sleep(2)
+            
             # Atualiza o tempo de atendimento
-            #self.update_time()
+            self.update_time()
+            log.info(f"Tempo atual: {self.time}")
    
     def estimate_time(self, requests):
         """
