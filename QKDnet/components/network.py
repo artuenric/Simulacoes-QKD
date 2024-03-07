@@ -79,11 +79,20 @@ class Network():
         Add carga dos canais.
         
         Args:  
-            alice, bob (int): Nós da rede.
-            load (int): Carga a ser adicionada ao canal.
+            rota (list): Lista com os nós que compõem a rota: [1, 2, 3, 4...]
         """
-        for link in rota:
-            self.channels[(link[0], link[1])]["load"] += 1
+        # Se a rota tiver menos de dois nós, não há links para percorrer
+        if len(rota) < 2:
+            return
+        
+        # Iterar sobre os pares de nós consecutivos na rota
+        for link in zip(rota[:-1], rota[1:]):
+            # Obtém os nós que formam o link
+            node_from, node_to = link
+            
+            # Atualiza a carga do canal correspondente
+            self.channels[(node_from, node_to)]["load"] += 1
+
     
     def assign_to_net(self, G):
         """
