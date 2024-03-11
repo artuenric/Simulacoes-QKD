@@ -119,6 +119,7 @@ class Controller():
         
         log.info(f"Requests escolhidas para alocação: {list(request.num_id for request in self.current_requests)}")
         
+        #self.current_requests = current_requests
     
     def receive_requests(self, requests):
         """
@@ -152,7 +153,7 @@ class Controller():
         """
         
         # Enquanto houver requisições na lista de requisições
-        while len(self.requests) > 0: # fnal do laço remover as requests de current_requests
+        while not all(request.finished for request in self.requests): # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
             self.allocate()
             
@@ -171,20 +172,22 @@ class Controller():
                 
                 if request.keys_need <= 0:
                     log.info(f"Request: {request.num_id} - Atendida com sucesso.")
-                    
                     request.served = True
+                    request.finished = True
                     self.requests.remove(request)
-                    self.current_requests.remove(request)
-                    log.info(f"Request: {request.num_id} - Removida da lista de requests.")
+                    # log.info(f"Request: {request.num_id} - Removida da lista de requests.")
                     
                 elif request.current_time == request.max_time:
                     log.info(f"Request: {request.num_id} - Expirou!")
-                    request.served = False
-                    self.current_requests.remove(request)
+                    # request.served = False
+                    request.finished = True
                     self.requests.remove(request)
                     
                 # "Limpa" a rota da requisição    
                 self.network.remove_load(request.route)
+            
+            # Limpa a lista de requisições atuais
+            self.current_requests.clear()
             
             # Atualiza o tempo de atendimento
             self.update_time()
@@ -200,7 +203,7 @@ class Controller():
 
         for r in requests:
             # Calcula o tempo estimado de atendimento
-            estimated_time = 1 + r.keys_need / self.network.nqubits * r.protocol.sucess_rate
+            estimated_time = 1 + r.keys_need / (self.network.nqubits * r.protocol.sucess_rate)
             # Atualiza o tempo estimado de atendimento
             r.set_estimated_time(estimated_time)
     
