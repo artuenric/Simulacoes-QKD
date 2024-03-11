@@ -81,7 +81,13 @@ class Simulation:
         # Rodando as simulações
         for simulacao in range(self.n_simulations):
             # Gera as requisições
-            requests = self.generate_requests()
+            
+            # requests = self.generate_requests()
+            r1 = Request(0, "Class A", "BB84", 5, 2, 10)
+            r2 = Request(1, "Class A", "BB84", 5, 1, 11)
+            
+            requests = [r1, r2]
+            
             # Adiciona as requisições ao controlador
             self.controller.receive_requests(requests)
             # Envia as requisições para a rede

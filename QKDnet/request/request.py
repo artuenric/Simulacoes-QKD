@@ -24,7 +24,7 @@ class Request:
         self.max_time = None
         self.set_max_time()
         self.served = False
-        
+        self.finished = False
         
     def __str__(self) -> str:
         return f"{self.app}: {self.alice}-{self.bob} (P:{self.priority} Key: {self.keys_need})"
@@ -69,7 +69,7 @@ class Request:
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
-        self.max_time = 0 # (self.keys_need * self.protocol.sucess_rate) + 5
+        self.max_time = 100 # (self.keys_need // self.protocol.sucess_rate)
         pass
     
     def get_info(self):

@@ -8,7 +8,7 @@ class E91(Protocol):
     def __init__(self):
         super().__init__()
         self.app = "E91"
-        self.sucess_rate = 0.5
+        self.sucess_rate = 0.4
         
     def prepare_qubits(self, key, bases):
         """
