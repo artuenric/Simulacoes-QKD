@@ -8,7 +8,6 @@ log.basicConfig(
     format='%(asctime)s - %(message)s'  # Formato da mensagem de log
 )
 
-
 class Controller():
     """
     Controlador SDN para a rede quântica.
@@ -19,7 +18,7 @@ class Controller():
         self.set_paths_calculation('shortest')
         self.received_requests = []
         self.requests = []
-        self.current_requests = set()
+        self.current_requests = []
         self.time = 0
     
     def set_paths_calculation(self, routes_calculation_type):
@@ -57,6 +56,7 @@ class Controller():
             requests (list): Lista de requisições.
         """
         self.received_requests.append(requests)
+        self.requests = requests
     
     def add_current_requests(self, requests):
         """
@@ -90,9 +90,6 @@ class Controller():
             requests (list): Lista de requests.
         """
         
-        # Lista de requisições a serem atendidas
-        current_requests = []
-        
         # Itera sobre as requisições
         for r in self.requests:
             # Calcula as rotas de menor custo para a request
@@ -113,19 +110,40 @@ class Controller():
                     r.route = route
                     log.info(f"Request: {r.num_id} - Rota {route}.")
                     
-                    current_requests.append(r)
+                    self.current_requests.append(r)
                     log.info(f"Request: {r.num_id} - Adicionado requests na lista de requests atuais.")
                     
                     self.network.add_load(route)
                     log.info(f"Add Load na rota: {list(self.network.channels[(link[0], link[1])]["load"] for link in route_links)}")
                     break
         
-        log.info(f"Requests escolhidas para alocação: {list(request.num_id for request in current_requests)}")
+        log.info(f"Requests escolhidas para alocação: {list(request.num_id for request in self.current_requests)}")
         
-        return current_requests
-            
     
-    def send_requests(self, requests):
+    def receive_requests(self, requests):
+        """
+        Recebe as requisições e as envia para a rede.
+        
+        Args:
+            requests (list): Lista de requisições.
+        """
+        
+        # Adiciona as requisições recebidas na lista de requisições
+        self.received_requests = requests
+        self.requests.extend(requests)
+
+        log.info(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
+
+        # Estima o tempo para atendimento dos requests
+        self.estimate_time(self.requests)        
+        
+        # Ordena as requisições
+        self.requests = sorted(self.requests, key=lambda r: r.priority) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe
+        
+        log.info(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
+        
+        
+    def send_requests(self):
         """
         Envia as requisições para a rede que as executa a partir da lista.
         
@@ -133,25 +151,14 @@ class Controller():
             requests (list): Lista de requisições.
         """
         
-        log.info(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
-        
-        # Adiciona na "memória" do controlador uma cópia das requisições recebidas
-        self.requests = requests.copy()
-        # Estima o tempo para atendimento dos requests
-        self.estimate_time(self.requests)
-        # Ordena as requisições por tempo estimado
-        self.requests = sorted(self.requests, key=lambda r: r.estimated_time) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe    
-        
-        log.info(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
-        
         # Enquanto houver requisições na lista de requisições
         while len(self.requests) > 0: # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
-            current_requests = self.allocate()
+            self.allocate()
             
-            log.info(f"Requests sendo atendidas: {list(request.num_id for request in current_requests)}")
+            log.info(f"Requests sendo atendidas: {list(request.num_id for request in self.current_requests)}")
             
-            for request in current_requests:
+            for request in self.current_requests:
                 log.info(f"Request: {request.num_id} - Executando.")
                 
                 # Executa a aplicação QKD
@@ -167,12 +174,13 @@ class Controller():
                     
                     request.served = True
                     self.requests.remove(request)
-                    
+                    self.current_requests.remove(request)
                     log.info(f"Request: {request.num_id} - Removida da lista de requests.")
                     
                 elif request.current_time == request.max_time:
                     log.info(f"Request: {request.num_id} - Expirou!")
                     request.served = False
+                    self.current_requests.remove(request)
                     self.requests.remove(request)
                     
                 # "Limpa" a rota da requisição    
@@ -190,11 +198,11 @@ class Controller():
             requests (list): Lista de requisições.
         """
 
-        for request in requests:
+        for r in requests:
             # Calcula o tempo estimado de atendimento
-            estimated_time = 1 + ((request.keys_need)/self.network.nqubits) * request.protocol.sucess_rate
+            estimated_time = 1 + r.keys_need / self.network.nqubits * r.protocol.sucess_rate
             # Atualiza o tempo estimado de atendimento
-            request.set_estimated_time(estimated_time)
+            r.set_estimated_time(estimated_time)
     
     def update_time(self):
         """

@@ -78,19 +78,11 @@ class Simulation:
             taxas_sucesso_chaves_geral (list): Lista com as taxas de sucesso das chaves para cada simulação.
             vazao (list): Lista com a vazão para cada simulação.
         """
-        
-        # Variáveis para armazenar os resultados
-        taxas_sucesso_chaves_geral = []
-        vazao = []
-
         # Rodando as simulações
         for simulacao in range(self.n_simulations):
-            taxas_sucesso_chaves_e91 = []
-            taxas_sucesso_chaves_bb84 = []
-            taxas_sucesso_chaves_b92 = []
-            
             # Gera as requisições
             requests = self.generate_requests()
+            # Adiciona as requisições ao controlador
+            self.controller.receive_requests(requests)
             # Envia as requisições para a rede
-            self.controller.send_requests(requests)
-            
+            self.controller.send_requests()
