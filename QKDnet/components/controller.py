@@ -1,7 +1,7 @@
 import networkx as nx
 from ..protocols import *
 from .finder import *
-from time import sleep
+from .data import DataCenter
 import logging as log
 log.basicConfig(
     level=log.INFO,  # Nível mínimo de gravidade para registrar
@@ -15,6 +15,7 @@ class Controller():
     def __init__(self, network) -> None:
         self.network = network
         self.pathFinder = None
+        self.data_center = DataCenter()
         self.set_paths_calculation('shortest')
         self.received_requests = []
         self.requests = []
@@ -119,7 +120,6 @@ class Controller():
         
         log.info(f"Requests escolhidas para alocação: {list(request.num_id for request in self.current_requests)}")
         
-        #self.current_requests = current_requests
     
     def receive_requests(self, requests):
         """
@@ -136,14 +136,14 @@ class Controller():
         log.info(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
 
         # Estima o tempo para atendimento dos requests
-        self.estimate_time(self.requests)        
-        
+        self.estimate_time(self.requests)
+
         # Ordena as requisições
         self.requests = sorted(self.requests, key=lambda r: r.priority) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe
-        
+
         log.info(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
-        
-        
+
+
     def send_requests(self):
         """
         Envia as requisições para a rede que as executa a partir da lista.
@@ -151,48 +151,52 @@ class Controller():
         Args:
             requests (list): Lista de requisições.
         """
-        
+
         # Enquanto houver requisições na lista de requisições
         while not all(request.finished for request in self.requests): # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
             self.allocate()
-            
+
             log.info(f"Requests sendo atendidas: {list(request.num_id for request in self.current_requests)}")
-            
+
             for request in self.current_requests:
                 log.info(f"Request: {request.num_id} - Executando.")
-                
+
                 # Executa a aplicação QKD
                 request.protocol.run(self.network, request.route)
                 # Atualiza o númerp de chaves obtidas
                 request.update_keys(len(request.protocol.shared_key))
+
+                # Coleta de dados
+                self.collect_data(request.protocol)
                 
                 log.info(f"Request: {request.num_id} - Chaves Obtidas: {len(request.protocol.shared_key)}")
                 log.info(f"Request: {request.num_id} - Chaves necessárias: {request.keys_need}")
-                
+
                 if request.keys_need <= 0:
                     log.info(f"Request: {request.num_id} - Atendida com sucesso.")
                     request.served = True
                     request.finished = True
                     self.requests.remove(request)
-                    # log.info(f"Request: {request.num_id} - Removida da lista de requests.")
-                    
+                    log.info(f"Request: {request.num_id} - Removida da lista de requests.")
+
                 elif request.current_time == request.max_time:
                     log.info(f"Request: {request.num_id} - Expirou!")
                     # request.served = False
                     request.finished = True
                     self.requests.remove(request)
-                    
+
                 # "Limpa" a rota da requisição    
                 self.network.remove_load(request.route)
-            
+
             # Limpa a lista de requisições atuais
             self.current_requests.clear()
-            
+
             # Atualiza o tempo de atendimento
             self.update_time()
             log.info(f"Tempo atual: {self.time}")
-   
+
+
     def estimate_time(self, requests):
         """
         Estima o tempo de atendimento para as requisições.
@@ -214,3 +218,13 @@ class Controller():
         self.time += 1
         for request in self.requests:
             request.current_time += 1
+    
+    def collect_protocol_data(self, protocol):
+        """
+        Coleta os dados das requisições atendidas.
+        
+        Args:
+            protocol (Protocol): Protocolo de QKD.
+        """
+        self.data_center.sucess_rates.append(protocol.sucess_rate)
+        
