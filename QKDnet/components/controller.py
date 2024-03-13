@@ -1,7 +1,8 @@
-import networkx as nx
 from ..protocols import *
 from .finder import *
-from .data import DataCenter
+from .data import DataBase
+
+import networkx as nx
 import logging as log
 log.basicConfig(
     level=log.INFO,  # Nível mínimo de gravidade para registrar
@@ -15,7 +16,8 @@ class Controller():
     def __init__(self, network) -> None:
         self.network = network
         self.pathFinder = None
-        self.data_center = DataCenter()
+        self.sorter = None
+        self.data_base = DataBase()
         self.set_paths_calculation('shortest')
         self.received_requests = []
         self.requests = []
@@ -132,7 +134,8 @@ class Controller():
         # Adiciona as requisições recebidas na lista de requisições
         self.received_requests = requests
         self.requests.extend(requests)
-
+        self.data_base.collect_all_requests_data(requests)
+        
         log.info(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
 
         # Estima o tempo para atendimento dos requests
@@ -151,7 +154,7 @@ class Controller():
         Args:
             requests (list): Lista de requisições.
         """
-
+        
         # Enquanto houver requisições na lista de requisições
         while not all(request.finished for request in self.requests): # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
@@ -168,7 +171,7 @@ class Controller():
                 request.update_keys(len(request.protocol.shared_key))
 
                 # Coleta de dados
-                self.collect_data(request.protocol)
+                self.data_base.collect_protocol_data(request.protocol)
                 
                 log.info(f"Request: {request.num_id} - Chaves Obtidas: {len(request.protocol.shared_key)}")
                 log.info(f"Request: {request.num_id} - Chaves necessárias: {request.keys_need}")
@@ -176,14 +179,15 @@ class Controller():
                 if request.keys_need <= 0:
                     log.info(f"Request: {request.num_id} - Atendida com sucesso.")
                     request.served = True
+                    self.data_base.collect_served_requests_data(request)
                     request.finished = True
                     self.requests.remove(request)
                     log.info(f"Request: {request.num_id} - Removida da lista de requests.")
 
                 elif request.current_time == request.max_time:
                     log.info(f"Request: {request.num_id} - Expirou!")
-                    # request.served = False
                     request.finished = True
+                    self.data_base.collect_failed_requests_data(request)
                     self.requests.remove(request)
 
                 # "Limpa" a rota da requisição    
@@ -218,13 +222,3 @@ class Controller():
         self.time += 1
         for request in self.requests:
             request.current_time += 1
-    
-    def collect_protocol_data(self, protocol):
-        """
-        Coleta os dados das requisições atendidas.
-        
-        Args:
-            protocol (Protocol): Protocolo de QKD.
-        """
-        self.data_center.sucess_rates.append(protocol.sucess_rate)
-        
