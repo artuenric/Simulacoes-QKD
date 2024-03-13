@@ -79,16 +79,12 @@ class Simulation:
             vazao (list): Lista com a vazão para cada simulação.
         """
         # Rodando as simulações
-        for simulacao in range(self.n_simulations):
-            # Gera as requisições
-            
-            # requests = self.generate_requests()
-            r1 = Request(0, "Class A", "BB84", 5, 2, 10)
-            r2 = Request(1, "Class A", "BB84", 5, 1, 11)
-            
-            requests = [r1, r2]
-            
-            # Adiciona as requisições ao controlador
-            self.controller.receive_requests(requests)
-            # Envia as requisições para a rede
-            self.controller.send_requests()
+        requests = self.generate_requests()
+        # Adiciona as requisições ao controlador
+        self.controller.receive_requests(requests)
+        # Envia as requisições para a rede
+        self.controller.send_requests()
+
+        # Coleta os dados
+        self.throughput = self.controller.data_base.get_throughput()
+        self.sucess_rate = self.controller.data_base.get_key_sucess_rate()
