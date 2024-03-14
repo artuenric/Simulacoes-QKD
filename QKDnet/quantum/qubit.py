@@ -1,5 +1,5 @@
 from random import randint
-print("Importando Qubit")
+
 class Qubit():
     """
     Um objeto para abstrair um bit quântico.
