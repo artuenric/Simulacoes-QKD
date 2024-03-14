@@ -6,9 +6,10 @@ class Request:
     Um objeto para ser usado como requisição de chave quântica.
     """
     
-    def __init__(self, num_id, classe, app, priority, alice, bob):
+    def __init__(self, num_id, category, app, priority, alice, bob):
+        # Identificação
         self.num_id = num_id
-        self.classe = classe
+        self.category = category
         self.min_fidelity = None
         self.keys_need = None
         self.set_keys_need()
@@ -19,10 +20,13 @@ class Request:
         self.alice = alice
         self.bob = bob
         self.route = []
+        # Tempo
         self.esttimeted_time = None
-        self.current_time = 0
+        self.time_left = None
+        self.max_start_time = None
         self.max_time = None
         self.set_max_time()
+        # Status
         self.served = False
         self.finished = False
         
@@ -48,15 +52,15 @@ class Request:
         """
         Define o número de chaves que a requisição precisa.
         """
-        if self.classe == "Class A":
+        if self.category == "Class A":
             self.keys_need = 100
-        elif self.classe == "Class B":
+        elif self.category == "Class B":
             self.keys_need = 250
-        elif self.classe == "Class C":
+        elif self.category == "Class C":
             self.keys_need = 500
-        elif self.classe == "Class D":
+        elif self.category == "Class D":
             self.keys_need = 1000
-        elif self.classe == "Class E":
+        elif self.category == "Class E":
             self.keys_need = 1500
     
     def set_estimated_time(self, time):
@@ -69,8 +73,8 @@ class Request:
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
-        self.max_time = 100 # (self.keys_need // self.protocol.sucess_rate)
-        pass
+        self.max_time = 10 # (self.keys_need // self.protocol.sucess_rate)
+        self.time_left = self.max_time
     
     def get_info(self):
         """
@@ -92,5 +96,9 @@ class Request:
         """
         self.keys_need -= keys
         
-        # Subtrai do valor de chaves necessárias o número obtido da última execução do protocolo.
-        # *self.keys_need -= self.protocol.shared_key
+    def update_time(self):
+        """
+        Atualiza o tempo de atendimento para a requisição.
+        """
+        self.time_left = self.time_left - 1 if self.time_left > 0 else 0
+        
