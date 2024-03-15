@@ -6,4 +6,4 @@ class Sorter(ABC):
 
     @abstractmethod
     def sort(self):
-        return sorted(self.data)
+        pass

@@ -32,5 +32,8 @@ class UrgencySorter(Sorter):
         Returns:
             sorted_requests (list): Lista de requisições ordenadas.
         """
+        
+        # Ordena as requisições
         sorted_requests = sorted(requests, key=custom_sort)
+        
         return sorted_requests
