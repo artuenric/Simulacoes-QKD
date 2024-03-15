@@ -1,1 +1,2 @@
-from .sorter import Sorter
+from .fifoSorter import FifoSorter
+from .urgencySorter import UrgencySorter

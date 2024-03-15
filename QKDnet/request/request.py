@@ -17,6 +17,7 @@ class Request:
         self.protocol = None
         self.set_protocol(app)
         self.priority = priority
+        # Rota
         self.alice = alice
         self.bob = bob
         self.route = []
@@ -63,6 +64,14 @@ class Request:
         elif self.category == "Class E":
             self.keys_need = 1500
     
+    def set_route(self, route):
+        """
+        Define a rota para a requisição.
+        """
+        self.route = route
+        self.route_length = len(self.route)
+    
+    
     def set_estimated_time(self, time):
         """
         Define o tempo estimado (em time slot) para o request ser atendido.
@@ -73,7 +82,9 @@ class Request:
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
+        # Define o tempo máximo para ser atendido
         self.max_time = 10 # (self.keys_need // self.protocol.sucess_rate)
+        # Define o tempo restante para ser atendido
         self.time_left = self.max_time
     
     def get_info(self):

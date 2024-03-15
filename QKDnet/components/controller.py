@@ -1,6 +1,7 @@
 from ..protocols import *
 from ..utils import Logger
 from .finder import *
+from .sorter import *
 from .data import DataBase
 
 import networkx as nx
@@ -13,6 +14,7 @@ class Controller():
         self.network = network
         self.pathFinder = None
         self.sorter = None
+        self.set_sorter('urgency')
         self.data_base = DataBase()
         self.set_paths_calculation('kshortest')
         self.received_requests = []
@@ -36,6 +38,21 @@ class Controller():
             self.pathFinder = AllPaths(self.network)
         elif routes_calculation_type == 'klength':
             self.pathFinder = KLengthPaths(self.network)
+    
+    def set_sorter(self, sorter_type):
+        """
+        Define o tipo de ordenação que o controlador utilizará.
+
+        Args:
+            sorter (str): Tipo de ordenação.
+        """
+        sorter_type = sorter_type.lower()
+        
+        if sorter_type == 'fifo':
+            self.sorter = FifoSorter()
+        elif sorter_type == 'urgency':
+            self.sorter = UrgencySorter()
+        
     
     def set_network(self, network):
         """
@@ -143,11 +160,11 @@ class Controller():
         
         Logger.get_instance().log(f"Requisições recebidas pelo Controlador: {list(request.get_info() for request in requests)}")
 
-        # Estima o tempo para atendimento dos requests
-        self.estimate_time(self.requests)
-
+        # Estima o tempo para atendimento dos requests e define as rotas
+        self.prepare_requests(self.requests)
+        
         # Ordena as requisições
-        self.requests = sorted(self.requests, key=lambda r: r.priority) #Talvez seja necessário implementar um método de ordenação próprio por meio de uma classe
+        self.requests = self.sorter.sort(self.requests)
 
         Logger.get_instance().log(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
 
@@ -200,9 +217,9 @@ class Controller():
             Logger.get_instance().log(f"Tempo atual: {self.time}")
 
 
-    def estimate_time(self, requests):
+    def prepare_requests(self, requests):
         """
-        Estima o tempo de atendimento para as requisições.
+        Estima o tempo de atendimento para as requisições e define a rota para ela.
 
         Args:
             requests (list): Lista de requisições.
@@ -213,6 +230,8 @@ class Controller():
             estimated_time = 1 + r.keys_need / (self.network.nqubits * r.protocol.sucess_rate)
             # Atualiza o tempo estimado de atendimento
             r.set_estimated_time(estimated_time)
+            # Define a rotas para a requisição
+            r.set_route(self.pathFinder.get_paths(r.alice, r.bob))
     
     def update_time(self):
         """
