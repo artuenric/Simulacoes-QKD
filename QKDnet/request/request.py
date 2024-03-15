@@ -21,6 +21,7 @@ class Request:
         self.alice = alice
         self.bob = bob
         self.route = []
+        self.route_length = None
         # Tempo
         self.esttimeted_time = None
         self.time_left = None
@@ -41,7 +42,6 @@ class Request:
         Args:
             app (string): Nome da app (BB84, E91 ou B92)
         """
-
         if app == "BB84":
             self.protocol = BB84()
         elif app == "E91":
@@ -71,19 +71,22 @@ class Request:
         self.route = route
         self.route_length = len(self.route)
     
-    
-    def set_estimated_time(self, time):
+    def set_times(self, time):
         """
-        Define o tempo estimado (em time slot) para o request ser atendido.
+        Define os tempos (em time slot) para a requisição.
         """
+        # Define o tempo estimado para ser atendido
         self.estimated_time = time
+        # Define o tempo máximo para o início do atendimento
+        self.max_start_time = self.max_time - self.estimated_time
     
     def set_max_time(self):
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
         # Define o tempo máximo para ser atendido
-        self.max_time = 10 # (self.keys_need // self.protocol.sucess_rate)
+        # (self.keys_need // self.protocol.sucess_rate)
+        self.max_time = 100 
         # Define o tempo restante para ser atendido
         self.time_left = self.max_time
     
@@ -112,4 +115,3 @@ class Request:
         Atualiza o tempo de atendimento para a requisição.
         """
         self.time_left = self.time_left - 1 if self.time_left > 0 else 0
-        

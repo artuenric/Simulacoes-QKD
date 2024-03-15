@@ -12,8 +12,8 @@ def custom_sort(request):
     """
     return (
         request.max_start_time,
-        request.estimated_time,
-        request.max_time,
+        -request.estimated_time,
+        -request.max_time,
         request.route_length
     )
         

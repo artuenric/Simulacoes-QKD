@@ -1,5 +1,17 @@
 import random
 from ..request import Request
+
+###
+
+rs = []
+rs.append(Request(0, "Class A", "BB84", 5, 0, 10))
+rs.append(Request(1, "Class B", "BB84", 5, 2, 4))
+rs.append(Request(3, "Class D", "BB84", 5, 2, 5))
+rs.append(Request(4, "Class E", "BB84", 5, 5, 6))
+rs.append(Request(2, "Class C", "BB84", 5, 1, 3))
+
+####
+
 class Simulation:
     def __init__(self, network, controller) -> None:
         # Propriedades
@@ -81,7 +93,7 @@ class Simulation:
         # Rodando as simulações
         requests = self.generate_requests()
         # Adiciona as requisições ao controlador
-        self.controller.receive_requests(requests)
+        self.controller.receive_requests(rs)
         # Envia as requisições para a rede
         self.controller.send_requests()
 

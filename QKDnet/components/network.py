@@ -11,7 +11,7 @@ class Network():
         self.channels = None
         self.topology = None
         self.controller = None
-        self.fidelity = None
+        self.fidelity = 1
         self.nqubits = None
         self.neprs = None
             

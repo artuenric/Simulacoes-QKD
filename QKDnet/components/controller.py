@@ -52,7 +52,10 @@ class Controller():
             self.sorter = FifoSorter()
         elif sorter_type == 'urgency':
             self.sorter = UrgencySorter()
-        
+        elif sorter_type == 'shortest':
+            self.sorter = ShortestRouteSorter()
+        elif sorter_type == 'longest':
+            self.sorter = LongestRouteSorter()
     
     def set_network(self, network):
         """
@@ -229,7 +232,7 @@ class Controller():
             # Calcula o tempo estimado de atendimento
             estimated_time = 1 + r.keys_need / (self.network.nqubits * r.protocol.sucess_rate)
             # Atualiza o tempo estimado de atendimento
-            r.set_estimated_time(estimated_time)
+            r.set_times(estimated_time)
             # Define a rotas para a requisição
             r.set_route(self.pathFinder.get_paths(r.alice, r.bob))
     
