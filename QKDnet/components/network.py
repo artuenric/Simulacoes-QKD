@@ -14,6 +14,7 @@ class Network():
         self.fidelity = 1
         self.nqubits = None
         self.neprs = None
+        self.capacity = 1
             
     def newDraw(self):
         pos = nx.spring_layout(self.G)
@@ -74,6 +75,14 @@ class Network():
         """
         self.neprs = neprs
     
+    def set_capacity(self, capacity):
+        """
+        Define a capacidade dos canais.
+        """
+        self.capacity = capacity
+        # Atualiza a capacidade dos canais
+        self.assign_to_net(self.G)
+    
     def remove_load(self, rota):
         """
         Remove a carga dos canais.
@@ -125,7 +134,7 @@ class Network():
             # Carga do canal
             "load": 0,
             # Capacidade do canal
-            "capacity": random.randint(1, 3),
+            "capacity": self.capacity,
             # EPRs
             "epr_available": random.randint(1, 2),
             # fidelity 
@@ -136,7 +145,7 @@ class Network():
             # Carga do canal
             "load": 0,
             # Capacidade do canal
-            "capacity": random.randint(1, 3),
+            "capacity": self.capacity,
             # EPRs
             "epr_available": random.randint(1, 2),
             # Fidelity 

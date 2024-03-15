@@ -93,7 +93,7 @@ class Simulation:
         # Rodando as simulações
         requests = self.generate_requests()
         # Adiciona as requisições ao controlador
-        self.controller.receive_requests(rs)
+        self.controller.receive_requests(requests)
         # Envia as requisições para a rede
         self.controller.send_requests()
 
