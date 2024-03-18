@@ -1,17 +1,6 @@
 import random
 from ..request import Request
 
-###
-
-rs = []
-rs.append(Request(0, "Class A", "BB84", 5, 0, 10))
-rs.append(Request(1, "Class B", "BB84", 5, 2, 4))
-rs.append(Request(3, "Class D", "BB84", 5, 2, 5))
-rs.append(Request(4, "Class E", "BB84", 5, 5, 6))
-rs.append(Request(2, "Class C", "BB84", 5, 1, 3))
-
-####
-
 class Simulation:
     def __init__(self, network, controller) -> None:
         # Propriedades
@@ -24,9 +13,75 @@ class Simulation:
         self.case = None
         self.apps = ["BB84", "E91", "B92"]
         self.apps_distribution = [0.33, 0.33, 0.33]
+        self.max_time_request = 10
         # Resultados
-        self.throughput = None
-        self.sucess_rate = None
+        self.throughput = []
+        self.key_sucess_rate = []
+    
+    # Implementados futuramente:
+    
+    # def set_apps(self, apps):
+        # """
+        # Define as apps disponíveis para a simulação.
+
+        # Args:
+        #     apps (list): Lista com os nomes das apps disponíveis.
+        # """
+        # self.apps = apps
+        
+    # def set_n_simulations(self, n):
+    #     """
+    #     Define o número de simulações.
+
+    #     Args:
+    #         n (int): Número de simulações.
+    #     """
+    #     pass
+    
+    def set_case(self, case):
+        """
+        Define o caso para simulação. Os casos vão de 1 a 9. Representam as diferentes formas de distribuição das classes.
+
+        Args:
+            case (int): Caso escolhido para a simulação.
+        """
+        self.case = case
+    
+    def set_n_requests(self, n):
+        """
+        Define o número de requests.
+
+        Args:
+            n (int): Número de requests.
+        """
+        self.n_requests = n
+    
+    def set_apps_distribution(self, distribution):
+        """
+        Define a distribuição de probabilidade para as apps disponíveis.
+
+        Args:
+            distribution (list): Lista com a distribuição. Respectivamente para BB84, E91, B92.
+        """
+        self.apps_distribution = distribution
+    
+    def set_max_time_request(self, time):
+        """
+        Define o tempo máximo (em time slot) para o request ser atendido.
+        
+        Args:
+            time (int): Tempo máximo para o request ser atendido.
+        """
+    
+        self.max_time_request = time
+    
+    def clear_data(self):
+        """
+        Limpa os dados coletados das simulações.
+        """
+        self.controller.data_base.clear_data()
+        self.sucess_rate.clear()
+        self.throughput.clear()
         
     def generate_requests(self):
         """
@@ -70,11 +125,11 @@ class Simulation:
             app = random.choices(self.apps, self.apps_distribution)[0]
             priority = random.randint(1, 5)
             alice, bob = self.network.random_alice_bob()
-            r = Request(i, classe, app, priority, alice, bob)
+            r = Request(i, classe, app, priority, self.max_time_request, alice, bob)
             requests.append(r)
             
         return requests
-
+    
     def run(self):
         """
         Roda as simulações para os protocolos BB84, E91 e B92.
@@ -98,5 +153,5 @@ class Simulation:
         self.controller.send_requests()
 
         # Coleta os dados
-        self.throughput = self.controller.data_base.get_throughput()
-        self.sucess_rate = self.controller.data_base.get_key_sucess_rate()
+        self.throughput.append(self.controller.data_base.get_throughput())
+        self.sucess_rate.append(self.controller.data_base.get_key_sucess_rate())

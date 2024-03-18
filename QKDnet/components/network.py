@@ -12,8 +12,8 @@ class Network():
         self.topology = None
         self.controller = None
         self.fidelity = 1
-        self.nqubits = None
-        self.neprs = None
+        self.nqubits = 100
+        self.neprs = 10
         self.capacity = 1
             
     def newDraw(self):

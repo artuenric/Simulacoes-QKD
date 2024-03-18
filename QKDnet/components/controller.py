@@ -12,17 +12,17 @@ class Controller():
     """
     def __init__(self, network) -> None:
         self.network = network
-        self.pathFinder = None
+        self.path_finder = None
         self.sorter = None
         self.set_sorter('urgency')
+        self.set_path_finder('kshortest')
         self.data_base = DataBase()
-        self.set_paths_calculation('kshortest')
         self.received_requests = []
         self.requests = []
         self.current_requests = []
         self.time = 0
     
-    def set_paths_calculation(self, routes_calculation_type):
+    def set_path_finder(self, routes_calculation_type):
         """
         Define o tipo de cálculo de rotas que o controlador utilizará.
 
@@ -31,13 +31,13 @@ class Controller():
         """
         # Calcula as rotas de menor custo
         if routes_calculation_type == 'shortest':
-            self.pathFinder = ShortestPaths(self.network)
+            self.path_finder = ShortestPaths(self.network)
         elif routes_calculation_type == 'kshortest': 
-            self.pathFinder = KShortestPaths(self.network)
+            self.path_finder = KShortestPaths(self.network)
         elif routes_calculation_type == 'all':
-            self.pathFinder = AllPaths(self.network)
+            self.path_finder = AllPaths(self.network)
         elif routes_calculation_type == 'klength':
-            self.pathFinder = KLengthPaths(self.network)
+            self.path_finder = KLengthPaths(self.network)
     
     def set_sorter(self, sorter_type):
         """
@@ -121,7 +121,7 @@ class Controller():
                 continue
             
             # Calcula as rotas de menor custo para a request
-            routes = self.pathFinder.get_paths(r.alice, r.bob)
+            routes = self.path_finder.get_paths(r.alice, r.bob)
             
             Logger.get_instance().log(f"Request: {r.num_id} - Rotas: {routes}")
             
@@ -169,7 +169,7 @@ class Controller():
         # Ordena as requisições
         self.requests = self.sorter.sort(self.requests)
 
-        Logger.get_instance().log(f"Requisições ordenadas por tempo estimado: {list((request.num_id, request.estimated_time) for request in self.requests)}")
+        Logger.get_instance().log(f"Requisições ordenadas: {list(request.num_id for request in self.requests)}")
 
 
     def send_requests(self):
@@ -234,7 +234,7 @@ class Controller():
             # Atualiza o tempo estimado de atendimento
             r.set_times(estimated_time)
             # Define a rotas para a requisição
-            r.set_route(self.pathFinder.get_paths(r.alice, r.bob))
+            r.set_route(self.path_finder.get_paths(r.alice, r.bob))
     
     def update_time(self):
         """

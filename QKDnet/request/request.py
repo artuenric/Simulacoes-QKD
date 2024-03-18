@@ -6,7 +6,7 @@ class Request:
     Um objeto para ser usado como requisição de chave quântica.
     """
     
-    def __init__(self, num_id, category, app, priority, alice, bob):
+    def __init__(self, num_id, category, app, priority, max_time, alice, bob):
         # Identificação
         self.num_id = num_id
         self.category = category
@@ -23,11 +23,11 @@ class Request:
         self.route = []
         self.route_length = None
         # Tempo
-        self.esttimeted_time = None
+        self.max_time = max_time
         self.time_left = None
+        self.esttimeted_time = None
         self.max_start_time = None
-        self.max_time = None
-        self.set_max_time()
+        self.set_time_left()
         # Status
         self.served = False
         self.finished = False
@@ -80,13 +80,10 @@ class Request:
         # Define o tempo máximo para o início do atendimento
         self.max_start_time = self.max_time - self.estimated_time
     
-    def set_max_time(self):
+    def set_time_left(self):
         """
         Define o tempo máximo (em time slot) para o request ser atendido.
         """
-        # Define o tempo máximo para ser atendido
-        # (self.keys_need // self.protocol.sucess_rate)
-        self.max_time = 100 
         # Define o tempo restante para ser atendido
         self.time_left = self.max_time
     

@@ -20,8 +20,8 @@ class DataBase():
         """
         Calcula a taxa de sucesso das chaves.
         """
-        self.key_sucess_rates = np.mean(self.key_sucess_rates)
-        return self.key_sucess_rates
+        key_sucess_rate = np.mean(self.key_sucess_rates)
+        return key_sucess_rate
     
     def collect_protocol_data(self, protocol):
         """
