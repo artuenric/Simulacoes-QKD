@@ -15,8 +15,8 @@ class Simulation:
         self.apps_distribution = [0.33, 0.33, 0.33]
         self.max_time_request = 10
         # Resultados
-        self.throughput = []
-        self.key_sucess_rate = []
+        self.throughput = 0
+        self.key_sucess_rate = 0
     
     # Implementados futuramente:
     
@@ -75,13 +75,31 @@ class Simulation:
     
         self.max_time_request = time
     
+    def get_key_success_rate(self):
+        """
+        Retorna a taxa de sucesso da chave.
+
+        Returns:
+            float: Taxa de sucesso da chave.
+        """
+        return self.key_sucess_rate
+    
+    def get_throughput(self):
+        """
+        Retorna a vazão.
+
+        Returns:
+            float: Vazão.
+        """
+        return self.throughput
+    
     def clear_data(self):
         """
         Limpa os dados coletados das simulações.
         """
         self.controller.data_base.clear_data()
-        self.sucess_rate.clear()
-        self.throughput.clear()
+        self.key_sucess_rate = 0
+        self.throughput = 0
         
     def generate_requests(self):
         """
@@ -153,5 +171,5 @@ class Simulation:
         self.controller.send_requests()
 
         # Coleta os dados
-        self.throughput.append(self.controller.data_base.get_throughput())
-        self.sucess_rate.append(self.controller.data_base.get_key_sucess_rate())
+        self.throughput = self.controller.data_base.get_throughput()
+        self.key_sucess_rate = self.controller.data_base.get_key_sucess_rate()

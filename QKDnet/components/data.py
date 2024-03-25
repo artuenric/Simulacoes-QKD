@@ -1,11 +1,15 @@
 import numpy as np
 
 class DataBase():
+    """
+    Armazena os dados coletados no controlador.
+    """
     def __init__(self):
         self.all_requests = []
         self.served_requests = []
         self.failed_requests = []
         self.key_sucess_rates = []
+        self.key_sucess_rate = 0
         self.throughput = 0
         self.final_time = 0
 
@@ -20,8 +24,8 @@ class DataBase():
         """
         Calcula a taxa de sucesso das chaves.
         """
-        key_sucess_rate = np.mean(self.key_sucess_rates)
-        return key_sucess_rate
+        self.key_sucess_rate = np.mean(self.key_sucess_rates)
+        return self.key_sucess_rate
     
     def collect_protocol_data(self, protocol):
         """
