@@ -2,6 +2,7 @@ from ..protocols import *
 from ..utils import Logger
 from .finder import *
 from .sorter import *
+from .allocator import *
 from .data import DataBase
 
 import networkx as nx
@@ -11,12 +12,17 @@ class Controller():
     Controlador SDN para a rede quântica.
     """
     def __init__(self, network) -> None:
+        # Elementos do controlador
         self.network = network
         self.path_finder = None
         self.sorter = None
+        self.allocator = None
+        # Definindo os tipos dos elementos
         self.set_sorter('urgency')
         self.set_path_finder('kshortest')
+        self.set_allocator('simple')
         self.data_base = DataBase()
+        # Dados
         self.received_requests = []
         self.requests = []
         self.current_requests = []
@@ -27,7 +33,7 @@ class Controller():
         Define o tipo de cálculo de rotas que o controlador utilizará.
 
         Args:
-            routes_calculation_type (str): shortest, kshortest, all, klength.
+            routes_calculation_type (str): Tipo de cálculo (shortest, kshortest, all, klength.)
         """
         # Calcula as rotas de menor custo
         if routes_calculation_type == 'shortest':
@@ -57,6 +63,16 @@ class Controller():
         elif sorter_type == 'longest':
             self.sorter = LongestRouteSorter()
     
+    def set_allocator(self, allocator):
+        """
+        Define o tipo de alocador das rotas.
+
+        Args:
+            allocator (str): Tipo de alocador.
+        """
+        if allocator == "simple":
+            self.allocator = SimpleAllocator(self)
+        
     def set_network(self, network):
         """
         Define a rede que o controlador trabalha.  
@@ -100,54 +116,7 @@ class Controller():
         route.append(nx.shortest_path(self.network.G, alice, bob))
         
         return route
-    
-    def allocate(self):
-        """
-        Aloca as rotas de acordo com o tempo de atendimento para os pedidos e atualiza a lista de requisições.
         
-        Args:
-            requests (list): Lista de requests.
-        """
-        
-        # Itera sobre as requisições
-        for r in self.requests.copy():
-            
-            # Se a requisição expirou, remove da lista de requisições
-            if r.time_left == 0:
-                Logger.get_instance().log(f"Request: {r.num_id} - Expirou!")
-                r.finished = True
-                self.data_base.collect_failed_requests_data(r)
-                self.requests.remove(r)
-                continue
-            
-            # Calcula as rotas de menor custo para a request
-            routes = self.path_finder.get_paths(r.alice, r.bob)
-            
-            Logger.get_instance().log(f"Request: {r.num_id} - Rotas: {routes}")
-            
-            # Itera sobre as rotas
-            for route in routes:
-                # Lista de pares de elementos adjacentes da lista route (canais)
-                route_links = [(route[i], route[i + 1]) for i in range(len(route) - 1)]
-                
-                Logger.get_instance().log(f"Capacidade da rota {route}: {list(self.network.channels[(link[0], link[1])]['capacity'] for link in route_links)}.")
-                Logger.get_instance().log(f"Load da rota {route}: {list(self.network.channels[(link[0], link[1])]['load'] for link in route_links)}.")
-                
-                # Se todos os links da rota tem capacidade maior que a carga atual, aloca a rota
-                if all(self.network.channels[(link[0], link[1])]["capacity"] > self.network.channels[(link[0], link[1])]["load"] for link in route_links):
-                    r.route = route
-                    Logger.get_instance().log(f"Request: {r.num_id} - Rota {route}.")
-                    
-                    self.current_requests.append(r)
-                    Logger.get_instance().log(f"Request: {r.num_id} - Adicionado requests na lista de requests atuais.")
-                    
-                    self.network.add_load(route)
-                    Logger.get_instance().log(f"Add Load na rota: {list(self.network.channels[(link[0], link[1])]["load"] for link in route_links)}")
-                    break
-        
-        Logger.get_instance().log(f"Requests escolhidas para alocação: {list(request.num_id for request in self.current_requests)}")
-        
-    
     def receive_requests(self, requests):
         """
         Recebe as requisições e as envia para a rede.
@@ -183,7 +152,7 @@ class Controller():
         # Enquanto houver requisições na lista de requisições
         while not all(request.finished for request in self.requests): # fnal do laço remover as requests de current_requests
             # Aloca as rotas de acordo com o tempo de atendimento e atualiza a lista de requisições atuais.
-            self.allocate()
+            self.allocator.allocate()
 
             Logger.get_instance().log(f"Requests sendo atendidas: {list(request.num_id for request in self.current_requests)}")
 
