@@ -15,9 +15,10 @@ class DataBase():
 
     def get_throughput(self):
         """
-        Calcula a taxa de sucesso das requisições.
+        Calcula a vazão.
         """
-        self.throughput = len(self.served_requests) / len(self.all_requests)
+        self.throughput = len(self.served_requests) / self.final_time
+        # self.throughput = len(self.served_requests) / len(self.all_requests)
         return self.throughput
     
     def get_key_sucess_rate(self):

@@ -187,6 +187,9 @@ class Controller():
             # Atualiza o tempo de atendimento
             self.update_time()
             Logger.get_instance().log(f"Tempo atual: {self.time}")
+        
+        # Coleta o tempo final
+        self.data_base.final_time = self.time
 
 
     def prepare_requests(self, requests):
