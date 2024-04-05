@@ -11,10 +11,10 @@ def custom_sort(request):
         tuple: Métricas de urgência da requisição.
     """
     return (
-        request.max_start_time,
-        -request.estimated_time,
-        -request.max_time,
-        request.route_length
+        request.max_start_time, # Menor tempo máximo para o início do atendimento
+        - request.estimated_time, # Maior tempo estimado para ser atendido
+        - request.max_time, # Maior tempo máximo de request
+        request.route_length # Menor rota
     )
         
 class UrgencySorter(Sorter):
