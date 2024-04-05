@@ -13,10 +13,13 @@ class Simulation:
         self.case = None
         self.apps = ["BB84", "E91", "B92"]
         self.apps_distribution = [0.33, 0.33, 0.33]
-        self.max_time_request = 10
+        self.max_time_request = None
         # Resultados
+        self.throughputs = []
         self.throughput = 0
+        self.key_sucess_rate = []
         self.key_sucess_rate = 0
+        
     
     # Implementados futuramente:
     
@@ -143,7 +146,7 @@ class Simulation:
             app = random.choices(self.apps, self.apps_distribution)[0]
             priority = random.randint(1, 5)
             alice, bob = self.network.random_alice_bob()
-            r = Request(i, classe, app, priority, self.max_time_request, alice, bob)
+            r = Request(i, classe, app, priority, random.randint(5, 15), alice, bob)
             requests.append(r)
             
         return requests
@@ -173,3 +176,24 @@ class Simulation:
         # Coleta os dados
         self.throughput = self.controller.data_base.get_throughput()
         self.key_sucess_rate = self.controller.data_base.get_key_sucess_rate()
+    
+    def multi_run(self):
+        """
+        Roda várias simulações.
+
+        Args:
+            n_simulations (int): Número de simulações.
+            n_requests (int): Número de requisições.
+            routes_calculation_type (str): Tipo de roteamento.
+        
+        Returns:
+            taxas_sucesso_chaves_geral (list): Lista com as taxas de sucesso das chaves para cada simulação.
+            vazao (list): Lista com a vazão para cada simulação.
+        """
+        for i in range(self.n_simulations):
+            self.run()
+            self.throughputs.append(self.throughput)
+            self.key_sucess_rate.append(self.key_sucess_rate)
+            self.controller.data_base.clear_data()
+        
+        return self.key_sucess_rate, self.throughputs
