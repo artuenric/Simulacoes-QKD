@@ -116,33 +116,33 @@ class Simulation:
         Returns:
             requests (list): Lista com requisições.
         """
-        classes = ["Class A", "Class B", "Class C", "Class D", "Class E"]
+        categories = ["Category A", "Category B", "Category C", "Category D", "Category E"]
         requests = []
         
         if self.case == 1:
-            class_distribution = [0.3, 0.3, 0.2, 0.15, 0.05]
+            category_distribution = [0.3, 0.3, 0.2, 0.15, 0.05]
         elif self.case == 2:
-            class_distribution = [0.25, 0.25, 0.2, 0.15, 0.15]
+            category_distribution = [0.25, 0.25, 0.2, 0.15, 0.15]
         elif self.case == 3:
-            class_distribution = [0.2] * 5
+            category_distribution = [0.2] * 5
         elif self.case == 4:
-            class_distribution = [0.15, 0.15, 0.2, 0.25, 0.25]       
+            category_distribution = [0.15, 0.15, 0.2, 0.25, 0.25]       
         elif self.case == 5:
-            class_distribution = [1, 0, 0, 0, 0]
+            category_distribution = [1, 0, 0, 0, 0]
         elif self.case == 6:
-            class_distribution = [0, 1, 0, 0, 0]
+            category_distribution = [0, 1, 0, 0, 0]
         elif self.case == 7:
-            class_distribution = [0, 0, 1, 0, 0]
+            category_distribution = [0, 0, 1, 0, 0]
         elif self.case == 8:
-            class_distribution = [0, 0, 0, 1, 0]
+            category_distribution = [0, 0, 0, 1, 0]
         elif self.case == 9:
-            class_distribution = [0, 0, 0, 0, 1]
+            category_distribution = [0, 0, 0, 0, 1]
         else:
             raise ValueError("Invalid case parameter")
         
         # Gera as requisições
         for i in range(self.n_requests):
-            classe = random.choices(classes, class_distribution)[0]
+            classe = random.choices(categories, category_distribution)[0]
             app = random.choices(self.apps, self.apps_distribution)[0]
             priority = random.randint(1, 5)
             alice, bob = self.network.random_alice_bob()
@@ -151,7 +151,7 @@ class Simulation:
             
         return requests
     
-    def run(self):
+    def run(self, random_requests=True):
         """
         Roda as simulações para os protocolos BB84, E91 e B92.
 
@@ -167,9 +167,10 @@ class Simulation:
             vazao (list): Lista com a vazão para cada simulação.
         """
         # Rodando as simulações
-        requests = self.generate_requests()
+        if random_requests:
+            self.requests = self.generate_requests()
         # Adiciona as requisições ao controlador
-        self.controller.receive_requests(requests)
+        self.controller.receive_requests(self.requests)
         # Envia as requisições para a rede
         self.controller.send_requests()
 

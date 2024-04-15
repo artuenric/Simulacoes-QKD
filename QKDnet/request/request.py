@@ -53,15 +53,15 @@ class Request:
         """
         Define o número de chaves que a requisição precisa.
         """
-        if self.category == "Class A":
+        if self.category == "Category A":
             self.keys_need = 100
-        elif self.category == "Class B":
+        elif self.category == "Category B":
             self.keys_need = 250
-        elif self.category == "Class C":
+        elif self.category == "Category C":
             self.keys_need = 500
-        elif self.category == "Class D":
+        elif self.category == "Category D":
             self.keys_need = 1000
-        elif self.category == "Class E":
+        elif self.category == "Category E":
             self.keys_need = 1500
     
     def set_route(self, route):
