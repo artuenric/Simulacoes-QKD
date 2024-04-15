@@ -48,7 +48,7 @@ class SimpleAllocator(Allocator):
                     Logger.get_instance().log(f"Request: {r.num_id} - Adicionado requests na lista de requests atuais.")
                     
                     self.controller.network.add_load(route)
-                    Logger.get_instance().log(f"Add Load na rota: {list(self.controller.network.channels[(link[0], link[1])]["load"] for link in route_links)}")
+                    Logger.get_instance().log(f"Add Load na rota: {list(self.controller.network.channels[(link[0], link[1])] for link in route_links)}")
                     break
         
         Logger.get_instance().log(f"Requests escolhidas para alocação: {list(request.num_id for request in self.controller.current_requests)}")
